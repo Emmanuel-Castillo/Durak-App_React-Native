@@ -1,0 +1,11 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.text {
+    @apply dark:text-white
+}
+
+.text-input {
+    @apply dark:text-white border dark:border-white rounded-lg p-4 w-full
+}
