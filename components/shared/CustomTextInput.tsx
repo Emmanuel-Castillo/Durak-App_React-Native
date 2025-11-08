@@ -23,7 +23,7 @@ const CustomTextInput = ({
     const [showPassword, setShowPassword] = React.useState(false);
     return isForPassword ? (
         <View
-            className={"dark:text-white border dark:border-white rounded-lg p-2 w-full flex-row justify-between items-center"}>
+            className={"dark-text-white border dark:border-white rounded-lg p-2 w-full flex-row justify-between items-center"}>
             <TextInput placeholder={"Password"} secureTextEntry={!showPassword}
                        value={value} onChangeText={onChangeText}
                        placeholderTextColor={theme === "dark" ? "white" : "black"}/>

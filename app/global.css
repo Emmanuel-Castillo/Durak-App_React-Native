@@ -9,3 +9,7 @@
 .text-input {
     @apply dark:text-white border dark:border-white rounded-lg p-4 w-full
 }
+
+.themed-view {
+    @apply flex-1 bg-white dark:bg-gray-800 p-4
+}

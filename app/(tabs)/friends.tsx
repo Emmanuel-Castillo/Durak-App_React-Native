@@ -4,7 +4,7 @@ import {SafeAreaView} from "react-native-safe-area-context";
 
 const Friends = () => {
     return (
-        <SafeAreaView>
+        <SafeAreaView className={"themed-view"}>
             <Text>Friends</Text>
         </SafeAreaView>
     )
