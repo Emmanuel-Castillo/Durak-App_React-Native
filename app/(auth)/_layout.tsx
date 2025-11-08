@@ -2,9 +2,10 @@ import React, {useEffect} from 'react'
 import {SafeAreaView} from "react-native-safe-area-context";
 import {Redirect, Slot} from "expo-router";
 import Animated, {useSharedValue, withTiming} from "react-native-reanimated";
+import {useAuthStore} from "@/store/auth.store";
 
 const AuthLayout = () => {
-    const isAuthenticated = false
+    const {isAuthenticated} = useAuthStore()
     const opacity = useSharedValue(0)
     const translateY = useSharedValue(50)
 
