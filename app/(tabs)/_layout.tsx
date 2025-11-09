@@ -21,9 +21,10 @@ const TabLayout = () => {
             tabBarStyle: {
                 borderRadius: 40,
                 marginHorizontal: 20,
-                height: 60,
+                height: 80,
                 position: 'absolute',
                 bottom: 40,
+                paddingTop: 10,
                 backgroundColor: theme === 'dark' ? "#334155" : "#F1F5F9",
             }
         }}>

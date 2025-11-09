@@ -23,9 +23,9 @@ const CustomTextInput = ({
     const [showPassword, setShowPassword] = React.useState(false);
     return isForPassword ? (
         <View
-            className={"dark-text-white border dark:border-white rounded-lg p-2 w-full flex-row justify-between items-center"}>
+            className={"border dark:border-white rounded-lg p-2 w-full flex-row justify-between items-center"}>
             <TextInput placeholder={"Password"} secureTextEntry={!showPassword}
-                       value={value} onChangeText={onChangeText}
+                       value={value} onChangeText={onChangeText} className={"dark:text-white"}
                        placeholderTextColor={theme === "dark" ? "white" : "black"}/>
             <Ionicons name={!showPassword ? "eye" : "eye-off"} size={24} color={theme === "dark" ? "white" : "black"}
                       onPress={() => setShowPassword(!showPassword)}/>
