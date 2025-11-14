@@ -4,6 +4,7 @@ import {SafeAreaView} from "react-native-safe-area-context";
 import {useAuthStore} from "@/store/auth.store";
 import {MaterialCommunityIcons} from "@expo/vector-icons";
 import {colorScheme} from "nativewind";
+import Avatar from "@/components/shared/avatar";
 
 const Profile = () => {
     const {user} = useAuthStore()
@@ -21,11 +22,10 @@ const Profile = () => {
                     <MaterialCommunityIcons name="cards-spade" size={35}
                                             color={`${colorScheme.get() === "dark" ? "white" : "black"}`}/>
                 </View>
-                <View className={"flex-1 gap-2 items-center"}>
-                    <View className={"border border-black dark:border-white h-1/2 w-3/4 justify-center items-center rounded-full "}>
-                        <Image source={require('../../assets/images/react-logo.png')} resizeMode={"cover"}/>
-                    </View>
+                <View className={"flex-1 gap-2 justify-center items-center"}>
+                    <Avatar userAvatar={user.avatar} size={100}/>
                     <Text className={"text text-3xl"}>{user.username}</Text>
+                    <Text className={"text text-sm"}>ID: {user.account_id}</Text>
                     <View className={"w-full border border-black dark:border-white"}/>
                     <View className={"w-full"}>
                         <Text className={"text text-md"}>Total wins: {user.num_wins}</Text>

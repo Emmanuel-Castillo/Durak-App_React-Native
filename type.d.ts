@@ -1,6 +1,6 @@
 import {} from "@supabase/supabase-js"
 
-export interface User {
+export type User = {
     id: number;
     created_at: Date;
     username: string;
@@ -8,4 +8,11 @@ export interface User {
     avatar?: string;
     num_wins: number;
     account_id: string;
+}
+
+export type Room = {
+    id: string;
+    host: string;
+    name: string;
+    players: User[]
 }

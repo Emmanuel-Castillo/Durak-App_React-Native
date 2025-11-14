@@ -71,3 +71,15 @@ export const getCurrentUser = async () => {
         throw new Error(e as string)
     }
 }
+
+export const getAllUsers = async () => {
+    try {
+        const {error: getAllUsersError, data: users} = await supabase.from('profiles').select('*').select('*')
+        if (getAllUsersError) throw getAllUsersError;
+
+        return users;
+    } catch(e) {
+        console.log(e)
+        throw new Error(e as string)
+    }
+}

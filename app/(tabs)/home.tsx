@@ -1,7 +1,8 @@
 import {View, Text, TouchableOpacity} from 'react-native'
 import React from 'react'
 import {SafeAreaView} from "react-native-safe-area-context";
-import {useNavigation} from "expo-router";
+import {Link, useNavigation} from "expo-router";
+import RoomSelection from "@/components/home/room-selection";
 
 const Home = () => {
     const navigation = useNavigation();
@@ -11,12 +12,7 @@ const Home = () => {
             <View className={"bg-orange-500 p-4 max-h-"}>
                 <Text>Current Progress</Text>
             </View>
-            <TouchableOpacity className={"bg-green-500 p-4 max-h-2xl"}>
-                <Text className={"text"}>Play Online</Text>
-            </TouchableOpacity>
-            <TouchableOpacity className={"bg-green-500 p-4 max-h-2xl"} onPress={() => {}}>
-                <Text className={"text"}>Play Local</Text>
-            </TouchableOpacity>
+            <RoomSelection/>
         </SafeAreaView>
     )
 }

@@ -13,3 +13,7 @@
 .themed-view {
     @apply flex-1 bg-white dark:bg-gray-800 p-4
 }
+
+.themed-border {
+    @apply border dark:border-white
+}

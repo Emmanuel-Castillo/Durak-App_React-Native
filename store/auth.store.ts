@@ -1,6 +1,7 @@
 import {create} from 'zustand'
 import {User} from "@/type";
 import {getCurrentUser} from "@/utils/supabase";
+import {Socket} from "socket.io-client";
 
 type AuthState = {
     isAuthenticated: boolean;
