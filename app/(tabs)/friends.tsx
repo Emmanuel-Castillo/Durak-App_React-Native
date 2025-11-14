@@ -6,6 +6,7 @@ import {Link} from "expo-router";
 import {User} from "@/type";
 import Avatar from "@/components/shared/avatar";
 import {getAllUsers} from "@/utils/supabase";
+import UserRow from "@/components/shared/UserRow";
 
 const EmptyListComponent = () => {
     return (<View className={"flex-1 p-4 items-center justify-center"}>
@@ -54,13 +55,7 @@ const Friends = () => {
                           </View>}
                       contentContainerClassName={"gap-2"}
                       renderItem={({item}) =>
-                          (<View className={"p-2 themed-border rounded-sm flex-row items-center gap-2"}>
-                              <Avatar size={40}/>
-                              <View>
-                                  <Text className={"text text-lg"}>{item.username}</Text>
-                                  <Text className={"text text-sm"}>{item.account_id}</Text>
-                              </View>
-                          </View>)
+                          (<UserRow user={item}/>)
                       } ListEmptyComponent={EmptyListComponent}/>
 
         </SafeAreaView>

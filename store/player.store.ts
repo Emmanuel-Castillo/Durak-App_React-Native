@@ -11,6 +11,7 @@ type PlayerState = {
     createRoom: (roomName: string) => void;
     joinRoom: (roomId: string) => void;
     leaveRoom: () => void;
+    removeFromRoom: (playerId: string) => void;
 }
 
 export const usePlayerStore = create<PlayerState>((set) => ({
@@ -24,6 +25,7 @@ export const usePlayerStore = create<PlayerState>((set) => ({
         set({socket});
         socket.on("connect", () => {
             console.log("Connected!", socket.id);
+            set({room: null})
         })
         socket.on("disconnect", () => {
             set({socket: null, room: null});
@@ -40,18 +42,27 @@ export const usePlayerStore = create<PlayerState>((set) => ({
         const socket = usePlayerStore.getState().socket;
         const user = useAuthStore.getState().user;
         if (!socket || !user) return console.warn("Socket or user undefined.");
-        socket.emit("createRoom", {player: user, roomName});
+        socket.emit("createRoom", {user, roomName});
     },
     joinRoom: (roomId) => {
         const socket = usePlayerStore.getState().socket;
         const user = useAuthStore.getState().user;
         if (!socket || !user) return console.warn("Socket or user undefined.");
-        socket.emit("joinRoom", {player: user, roomId});
+        socket.emit("joinRoom", {user, roomId});
     },
     leaveRoom: () => {
         const socket = usePlayerStore.getState().socket;
         if (!socket) return console.warn("Socket undefined.");
         socket.disconnect();
         set({socket: null, room: null});
+    },
+    removeFromRoom: (playerId: string) => {
+        const socket = usePlayerStore.getState().socket;
+        const room = usePlayerStore.getState().room;
+        const user = useAuthStore.getState().user;
+        if (!user || !socket || !room) return console.warn("User, socket, or room undefined.");
+
+        if (room.hostId !== user.account_id) return console.warn("User is not the host. RemoveFromRoom permission invalid.");
+        socket.emit("removeFromRoom", {playerId})
     }
 }))
