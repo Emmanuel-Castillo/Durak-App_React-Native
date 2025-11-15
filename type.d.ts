@@ -20,6 +20,7 @@ export type Player = {
     user: User;
     hand: Card[];
     role: "FirstAttacker" | "Attacker" | "Defender" | null;
+    nextPlayerUserId: number;
 }
 
 export type Room = {

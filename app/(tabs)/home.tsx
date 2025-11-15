@@ -2,7 +2,7 @@ import {View, Text, TouchableOpacity} from 'react-native'
 import React from 'react'
 import {SafeAreaView} from "react-native-safe-area-context";
 import RoomSelection from "@/components/home/room-selection";
-import CardComponent from "@/components/shared/cardComponent";
+import CustomCard from "@/components/shared/customCard";
 
 const Home = () => {
     return (

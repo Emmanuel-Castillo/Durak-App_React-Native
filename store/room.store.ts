@@ -2,6 +2,7 @@ import {create} from 'zustand'
 import {Game, Room} from "@/type";
 import {Socket, io} from "socket.io-client"
 import {useAuthStore} from "@/store/auth.store";
+import {sortPlayersStartingWithUser} from "@/lib/sortPlayers";
 
 type RoomState = {
     socket: Socket | null;
@@ -40,6 +41,9 @@ export const useRoomStore = create<RoomState>((set) => ({
         socket.on("gameData", (game: Game) => {
             const room = useRoomStore.getState().room;
             if (!room) return console.warn("No room found. Cannot update game data.");
+
+            // Sort players starting with own User
+            game.players = sortPlayersStartingWithUser(user.account_id, game.players)
             set({room: {...room, game: game}});
         })
     },
