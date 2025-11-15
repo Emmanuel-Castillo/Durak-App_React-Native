@@ -1,18 +1,24 @@
 import {View, Text, Button, FlatList} from 'react-native'
 import React from 'react'
 import {SafeAreaView} from 'react-native-safe-area-context'
-import {usePlayerStore} from "@/store/player.store";
+import {useRoomStore} from "@/store/room.store";
 import {Redirect} from "expo-router";
 import UserRow from "@/components/shared/UserRow";
 import {useAuthStore} from "@/store/auth.store";
 
 const Room = () => {
-    const {socket, room, leaveRoom, removeFromRoom} = usePlayerStore()
+    const {socket, room, leaveRoom, removeFromRoom} = useRoomStore()
     const {user} = useAuthStore()
 
     if (!user || !socket || !room) return <Redirect href={"/(tabs)/home"}/>
+    if (room.game) return <Redirect href={"/game"}/>
+
     const isHost = room.hostId === user.account_id
-    const canStartGame = isHost && room.players.length > 1
+    const canStartGame = isHost && room.users.length > 1
+
+    const startGame = () => {
+        socket.emit('startGame')
+    }
 
     return (
         <SafeAreaView className={"themed-view"}>
@@ -21,11 +27,11 @@ const Room = () => {
                 <Text className={"text text-3xl text-center"}>{room.name}</Text>
                 <Text className={"text text-center"}>Room ID: {room.id}</Text>
             </View>
-            <FlatList data={room.players} renderItem={({item}) => (
-                <UserRow user={item.user}
+            <FlatList data={room.users} renderItem={({item}) => (
+                <UserRow user={item}
                          removeFromRoomPermission={{
-                             enableRemoveFromRoom: isHost && user.account_id !== item.user.account_id,
-                             onClickRemoveFromRoom: () => removeFromRoom(item.user.account_id)
+                             enableRemoveFromRoom: isHost && user.account_id !== item.account_id,
+                             onClickRemoveFromRoom: () => removeFromRoom(item.account_id)
                          }}
                 />
             )}
@@ -33,8 +39,7 @@ const Room = () => {
             />
 
             <View className={"gap-4"}>
-                {canStartGame && <Button title={"Start Game"} onPress={() => {
-                }}/>}
+                {canStartGame && <Button title={"Start Game"} onPress={startGame}/>}
                 <Button title={"Leave Room"} onPress={leaveRoom}/>
             </View>
         </SafeAreaView>

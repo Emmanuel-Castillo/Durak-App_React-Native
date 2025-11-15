@@ -1,9 +1,9 @@
 import {create} from 'zustand'
-import {Room} from "@/type";
+import {Game, Room} from "@/type";
 import {Socket, io} from "socket.io-client"
 import {useAuthStore} from "@/store/auth.store";
 
-type PlayerState = {
+type RoomState = {
     socket: Socket | null;
     room: Room | null;
 
@@ -14,7 +14,7 @@ type PlayerState = {
     removeFromRoom: (playerId: string) => void;
 }
 
-export const usePlayerStore = create<PlayerState>((set) => ({
+export const useRoomStore = create<RoomState>((set) => ({
     socket: null,
     room: null,
     connectSocket: () => {
@@ -37,28 +37,33 @@ export const usePlayerStore = create<PlayerState>((set) => ({
         socket.on("roomData", (room: Room) => {
             set({room: room});
         })
+        socket.on("gameData", (game: Game) => {
+            const room = useRoomStore.getState().room;
+            if (!room) return console.warn("No room found. Cannot update game data.");
+            set({room: {...room, game: game}});
+        })
     },
     createRoom: (roomName) => {
-        const socket = usePlayerStore.getState().socket;
+        const socket = useRoomStore.getState().socket;
         const user = useAuthStore.getState().user;
         if (!socket || !user) return console.warn("Socket or user undefined.");
         socket.emit("createRoom", {user, roomName});
     },
     joinRoom: (roomId) => {
-        const socket = usePlayerStore.getState().socket;
+        const socket = useRoomStore.getState().socket;
         const user = useAuthStore.getState().user;
         if (!socket || !user) return console.warn("Socket or user undefined.");
         socket.emit("joinRoom", {user, roomId});
     },
     leaveRoom: () => {
-        const socket = usePlayerStore.getState().socket;
+        const socket = useRoomStore.getState().socket;
         if (!socket) return console.warn("Socket undefined.");
         socket.disconnect();
         set({socket: null, room: null});
     },
     removeFromRoom: (playerId: string) => {
-        const socket = usePlayerStore.getState().socket;
-        const room = usePlayerStore.getState().room;
+        const socket = useRoomStore.getState().socket;
+        const room = useRoomStore.getState().room;
         const user = useAuthStore.getState().user;
         if (!user || !socket || !room) return console.warn("User, socket, or room undefined.");
 

@@ -2,6 +2,7 @@ import {} from "@supabase/supabase-js"
 
 export type Card = {
     value: string;
+    suit: "hearts" | "clubs" | "diamonds" | "spades";
     rank: number;
 }
 
@@ -15,18 +16,24 @@ export type User = {
     account_id: string;
 }
 
-export type PlayerRole = "FirstAttacker" | "Attacker" | "Defender" | null
 export type Player = {
     user: User;
     hand: Card[];
-    role: PlayerRole;
-    socketId: string;
+    role: "FirstAttacker" | "Attacker" | "Defender" | null;
 }
 
 export type Room = {
     id: string;
     hostId: string;
     name: string;
+    users: User[];
+    game: Game | null;
+}
+
+export type Game = {
+    deck: Card[];
+    tsarCard: Card;
     players: Player[];
-    deck: Card[]
+    attackingCards: Card[];
+    counteredCards: Card[];
 }
