@@ -19,6 +19,7 @@ const TabLayout = () => {
             tabBarActiveTintColor: activeColor,
             tabBarInactiveTintColor: inactiveColor,
             tabBarStyle: {
+                opacity: 0,
                 borderRadius: 40,
                 marginHorizontal: 20,
                 height: 80,

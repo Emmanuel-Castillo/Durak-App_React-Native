@@ -6,18 +6,7 @@ import {Redirect} from "expo-router";
 import CustomCard from "@/components/shared/customCard";
 import Board from "@/components/game/board";
 import {Card} from "@/type";
-
-const TsarCardWithDeck = ({tsarCard, deckLength}: { tsarCard: Card, deckLength: number }) => {
-    return <View className={"relative"}>
-        {deckLength > 2 && <View className={"z-10"}>
-            <CustomCard deckLength={deckLength}/>
-        </View>}
-        <View className={"absolute rotate-90 left-1/2 top-1/2 transform -translate-y-1/2 -translate-x-1/4"}>
-            <CustomCard card={tsarCard}/>
-        </View>
-    </View>
-}
-
+import TsarCardWithDeck from "@/components/game/tsarCardWithDeck";
 
 const Game = () => {
     const {socket, room} = useRoomStore()
