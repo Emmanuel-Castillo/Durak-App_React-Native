@@ -28,7 +28,7 @@ const Home = () => {
         nextPlayerUserId: 0
     }
 
-    const NUM_PLAYERS = 4
+    const NUM_PLAYERS = 6
     const players = Array(NUM_PLAYERS).fill(player)
 
     return (

@@ -40,7 +40,7 @@ const OpponentHand = ({hand, rotateHand}: OpponentHandProps) => {
                 startAngle = -10, endAngle = 10;
                 break;
             default:
-                startAngle = -15, endAngle = 15;
+                startAngle = -30, endAngle = 30;
                 break;
         }
         return {startAngle, endAngle}
@@ -53,9 +53,9 @@ const OpponentHand = ({hand, rotateHand}: OpponentHandProps) => {
             case 2:
             case 3:
             case 4:
-                return 60
+                return 40
             default:
-                return 70
+                return 45
         }
     }
     const determineListDimens = () => {
@@ -63,10 +63,10 @@ const OpponentHand = ({hand, rotateHand}: OpponentHandProps) => {
         switch(rotateHand) {
             case "90":
             case "-90":
-                height = 200, width = 150
+                height = 130, width = 100
                 break;
             default:
-                height = 150, width = 200
+                height = 100, width = 130
                 break;
         }
         return {height, width}
@@ -82,7 +82,7 @@ const OpponentHand = ({hand, rotateHand}: OpponentHandProps) => {
             scrollEnabled={false}
             data={hand}
             horizontal
-            contentContainerClassName={"p-4 bg-red-500 justify-center items-center"}
+            contentContainerClassName={"justify-center items-center"}
             contentContainerStyle={{transform: [{rotate: `${rotateHand}deg`}], height: height, width: width}}
             renderItem={({item: card, index}) => {
 
@@ -96,7 +96,7 @@ const OpponentHand = ({hand, rotateHand}: OpponentHandProps) => {
                             ],
                         }}
                     >
-                        <CustomCard/>
+                        <CustomCard size={50}/>
                     </View>
                 );
             }}

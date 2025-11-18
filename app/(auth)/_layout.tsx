@@ -25,4 +25,5 @@ const AuthLayout = () => {
         </SafeAreaView>
     )
 }
+
 export default AuthLayout
