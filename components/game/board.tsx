@@ -1,13 +1,20 @@
 import {View, Text, FlatList} from 'react-native'
 import React from 'react'
-import {Player} from '@/type'
+import {Card, Player} from '@/type'
 import CustomCard from "@/components/shared/customCard";
 import cn from "clsx";
 import OpponentHand from "@/components/game/opponentHand";
 import {rgbaColor} from "react-native-reanimated/lib/typescript/Colors";
+import {useRoomStore} from "@/store/room.store";
+import TsarCardWithDeck from "@/components/game/tsarCardWithDeck";
+import OpponentStats from "@/components/game/opponentStats";
 
 type BoardProps = {
-    players: Player[]
+    players: Player[],
+    tsarCard: Card,
+    deckLength: number,
+    attackingCards: Card[]
+
 }
 
 function initTopPlayers(players: Player[]) {
@@ -23,7 +30,6 @@ function initTopPlayers(players: Player[]) {
             return []
     }
 }
-
 function initLeftPlayers(players: Player[]) {
     switch (players.length) {
         case 3:
@@ -38,7 +44,6 @@ function initLeftPlayers(players: Player[]) {
             return []
     }
 }
-
 function initRightPlayers(players: Player[]) {
     switch (players.length) {
         case 3:
@@ -52,33 +57,35 @@ function initRightPlayers(players: Player[]) {
     }
 }
 
-const Board = ({players}: BoardProps) => {
+const Board = ({players, tsarCard, deckLength, attackingCards}: BoardProps) => {
     const topPlayers: Player[] = initTopPlayers(players)
     const leftSidePlayers: Player[] = initLeftPlayers(players)
     const rightSidePlayers: Player[] = initRightPlayers(players)
     const userPlayer = players[0]
+    const numColAtkDefCards = players.length > 2 ? 2 : 3
 
     return (
         <View className={"flex-1"}>
             {/* Top Row */}
-            <View>
-            {topPlayers.length > 0 && (
+            <View className={"h-28"}>
+                {topPlayers.length > 0 && (
                     <FlatList
                         contentContainerClassName="items-center justify-center"
                         data={topPlayers} renderItem={({item: player}) =>
                         <View className={"relative"}>
-                            <View className={"themed-border absolute top-0 z-10 p-2 rounded"} style={{backgroundColor: 'rgba(0,0,0,.5)', left: -30, }}>
-                                <Text className={"text"}>
-                                    {player.user.username}
-                                </Text>
-                                <Text className={"text"}>{player.role}</Text>
-                            </View>
-                            <Text className={"absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10 text-2xl"}>{player.hand.length}</Text>
+                            <OpponentStats username={player.user.username}
+                                           role={player.role!}
+                                           absolutePosition={{
+                                               top: 0,
+                                               left: -30
+                                           }}/>
                             <OpponentHand hand={player.hand} rotateHand={"180"}/>
                         </View>
                     }/>
-            )}</View>
+                )}
+            </View>
 
+            {/* Middle Row */}
             <View className={"flex-1 flex-row items-center justify-between"}>
                 {/* Left Side */}
                 <View className={"h-100"}>
@@ -88,46 +95,61 @@ const Board = ({players}: BoardProps) => {
                                   contentContainerClassName={"flex-1 justify-around"}
                                   renderItem={({item: player}) => (
                                       <View className={"relative"}>
-                                          <View className={"themed-border absolute z-10 p-2 rounded"} style={{backgroundColor: 'rgba(0,0,0,.5)', top: -20}}>
-                                              <Text className={"text"}>
-                                                  {player.user.username}
-                                              </Text>
-                                              <Text className={"text"}>{player.role}</Text>
-                                          </View>
-                                              <Text className={"absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10 text-2xl"}>{player.hand.length}</Text>
+                                          <OpponentStats username={player.user.username}
+                                                         role={player.role!}
+                                                         absolutePosition={{
+                                                             top: -20,
+                                                             left: 0
+                                                         }}/>
                                           <OpponentHand hand={player.hand} rotateHand={"90"}/>
                                       </View>
                                   )}/>
                     )}
                 </View>
 
+                {/* Attacking / defending cards */}
+                <View className="p-2 pb-12">
+                        <FlatList
+                            data={attackingCards}
+                            scrollEnabled={true}
+                            numColumns={numColAtkDefCards}
+                            columnWrapperClassName="gap-2"
+                            contentContainerStyle={{flexGrow: 1}}
+                            contentContainerClassName="justify-center items-center gap-3 py-2"
+                            renderItem={({item: card}) => (
+                                <CustomCard card={card} size={70}/>
+                            )}
+                        />
+                </View>
+
                 {/* Right Side */}
                 <View className={"h-100"}>
-
-                {rightSidePlayers.length > 0 && (
-                    <FlatList data={rightSidePlayers}
-                              contentContainerClassName={"flex-1 justify-around"}
-                              renderItem={({item: player}) => (
-                                  <View className={"relative"}>
-                                      <View className={"themed-border absolute z-10 p-2 rounded"} style={{backgroundColor: 'rgba(0,0,0,.5)', top: -20}}>
-                                          <Text className={"text"}>
-                                              {player.user.username}
-                                          </Text>
-                                          <Text className={"text"}>{player.role}</Text>
+                    {rightSidePlayers.length > 0 && (
+                        <FlatList data={rightSidePlayers}
+                                  contentContainerClassName={"flex-1 justify-around"}
+                                  renderItem={({item: player}) => (
+                                      <View className={"relative"}>
+                                          <OpponentStats username={player.user.username}
+                                                         role={player.role!}
+                                                         absolutePosition={{
+                                                             top: -20,
+                                                             right: 0
+                                                         }}/>
+                                          <OpponentHand hand={player.hand} rotateHand={"-90"}/>
                                       </View>
-                                      <Text className={"absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10 text-2xl"}>{player.hand.length}</Text>
-                                      <OpponentHand hand={player.hand} rotateHand={"-90"}/>
-                                  </View>
-                              )}/>
-                )}
+                                  )}/>
+                    )}
                 </View>
             </View>
+
             {/* Bottom Row (User) */}
-            <View className={"bg-gray-600 p-2"}>
-                <Text>
-                    {userPlayer.user.username}
+            <View className={"bg-gray-600 p-2 relative gap-2"}>
+                <View className={"absolute top-0 right-0 transform -translate-y-1/2 -translate-x-1/2  z-10"}>
+                    <TsarCardWithDeck tsarCard={tsarCard} deckLength={24}/>
+                </View>
+                <Text className={"text text-2xl"}>
+                    {userPlayer.user.username} - {userPlayer.role}
                 </Text>
-                <Text>{userPlayer.role}</Text>
                 <FlatList data={userPlayer.hand} renderItem={({item}) =>
                     (<CustomCard card={item}/>)
                 } horizontal={true}/>

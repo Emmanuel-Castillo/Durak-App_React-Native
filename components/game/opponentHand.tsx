@@ -6,7 +6,7 @@ import {Card} from "@/type";
 
 type OpponentHandProps = {
     hand: Card[]
-    rotateHand: "-45" | "45" | "-90" |  "90" | "180"
+    rotateHand: "-45" | "45" | "-90" | "90" | "180"
 }
 const OpponentHand = ({hand, rotateHand}: OpponentHandProps) => {
     const handLength = hand.length;
@@ -60,7 +60,7 @@ const OpponentHand = ({hand, rotateHand}: OpponentHandProps) => {
     }
     const determineListDimens = () => {
         let height, width
-        switch(rotateHand) {
+        switch (rotateHand) {
             case "90":
             case "-90":
                 height = 130, width = 100
@@ -75,32 +75,33 @@ const OpponentHand = ({hand, rotateHand}: OpponentHandProps) => {
     const {startAngle, endAngle} = determineAngleRangeByHandLength(handLength)
     const {height, width} = determineListDimens()
 
-    console.log(startAngle, endAngle, marginLeft)
-
     return (
-        <FlatList
-            scrollEnabled={false}
-            data={hand}
-            horizontal
-            contentContainerClassName={"justify-center items-center"}
-            contentContainerStyle={{transform: [{rotate: `${rotateHand}deg`}], height: height, width: width}}
-            renderItem={({item: card, index}) => {
+        <View className={"relative"}>
+            <Text className={"absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10 text-2xl"}>{hand.length}</Text>
+            <FlatList
+                scrollEnabled={false}
+                data={hand}
+                horizontal
+                contentContainerClassName={"justify-center items-center"}
+                contentContainerStyle={{transform: [{rotate: `${rotateHand}deg`}], height: height, width: width}}
+                renderItem={({item: card, index}) => {
 
-                const cardAngle = angle(startAngle, endAngle, index)
-                return (
-                    <View
-                        style={{
-                            marginLeft: index === 0 ? 0 : -marginLeft,
-                            transform: [
-                                {rotate: `${cardAngle}deg`},
-                            ],
-                        }}
-                    >
-                        <CustomCard size={50}/>
-                    </View>
-                );
-            }}
-        />
+                    const cardAngle = angle(startAngle, endAngle, index)
+                    return (
+                        <View
+                            style={{
+                                marginLeft: index === 0 ? 0 : -marginLeft,
+                                transform: [
+                                    {rotate: `${cardAngle}deg`},
+                                ],
+                            }}
+                        >
+                            <CustomCard size={50}/>
+                        </View>
+                    );
+                }}
+            />
+        </View>
     )
 }
 export default OpponentHand

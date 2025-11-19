@@ -16,13 +16,11 @@ const Game = () => {
     const game = room.game
     const players = game.players
     const tsarCard = game.tsarCard
+    const deckLength = game.deck.length
 
     return (
         <SafeAreaView className={"themed-view gap-4 relative"}>
-            {tsarCard && <View className={"absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10"}>
-                <TsarCardWithDeck tsarCard={tsarCard} deckLength={game.deck.length}/>
-            </View>}
-            <Board players={players}/>
+            <Board players={players} tsarCard={tsarCard} deckLength={deckLength} attackingCards={[]}/>
             <Button title={"Leave Game"}/>
         </SafeAreaView>
     )
