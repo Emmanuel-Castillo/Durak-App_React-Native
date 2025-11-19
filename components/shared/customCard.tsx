@@ -3,7 +3,7 @@ import React from 'react'
 import {Card} from "@/type";
 import {allCards} from "@/assets/cards/allCards";
 
-type CardProps = {
+export type CardProps = {
     card?: Card;
     size?: number;
 

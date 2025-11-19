@@ -8,6 +8,7 @@ import {rgbaColor} from "react-native-reanimated/lib/typescript/Colors";
 import {useRoomStore} from "@/store/room.store";
 import TsarCardWithDeck from "@/components/game/tsarCardWithDeck";
 import OpponentStats from "@/components/game/opponentStats";
+import DraggableCard from "@/components/shared/DraggableCard";
 
 type BoardProps = {
     players: Player[],
@@ -64,8 +65,14 @@ const Board = ({players, tsarCard, deckLength, attackingCards}: BoardProps) => {
     const userPlayer = players[0]
     const numColAtkDefCards = players.length > 2 ? 2 : 3
 
+    const [activeCard, setActiveCard] = React.useState<React.ReactElement | null>(null)
+    const passActiveCardToState = (card: React.ReactElement | null) => {
+        setActiveCard(card)
+    }
+
     return (
         <View className={"flex-1"}>
+            {activeCard}
             {/* Top Row */}
             <View className={"h-28"}>
                 {topPlayers.length > 0 && (
@@ -143,15 +150,15 @@ const Board = ({players, tsarCard, deckLength, attackingCards}: BoardProps) => {
             </View>
 
             {/* Bottom Row (User) */}
-            <View className={"bg-gray-600 p-2 relative gap-2"}>
+            <View className={"bg-gray-600 p-2 pb-0 relative gap-2"}>
                 <View className={"absolute top-0 right-0 transform -translate-y-1/2 -translate-x-1/2  z-10"}>
                     <TsarCardWithDeck tsarCard={tsarCard} deckLength={24}/>
                 </View>
                 <Text className={"text text-2xl"}>
                     {userPlayer.user.username} - {userPlayer.role}
                 </Text>
-                <FlatList data={userPlayer.hand} renderItem={({item}) =>
-                    (<CustomCard card={item}/>)
+                <FlatList data={userPlayer.hand} className={"pb-8"} renderItem={({item}) =>
+                    (<DraggableCard cardProps={{card: item}} setActiveCard={passActiveCardToState}/>)
                 } horizontal={true}/>
             </View>
         </View>
