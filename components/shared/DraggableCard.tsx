@@ -1,86 +1,98 @@
-import {View, Text, Animated, PanResponder} from 'react-native'
-import React, {useRef} from 'react'
+import React, {useRef, useState} from "react";
+import {
+    View,
+    Animated,
+    PanResponder,
+    LayoutChangeEvent,
+} from "react-native";
 import CustomCard, {CardProps} from "@/components/shared/customCard";
+import {Card} from "@/type";
+
+type LayoutInfo = {
+    x: number;
+    y: number;
+    w: number;
+    h: number;
+};
 
 type DraggableCardProps = {
     cardProps: CardProps;
-    setActiveCard: (card: React.ReactElement | null) => void;
-}
-const DraggableCard = ({cardProps, setActiveCard}: DraggableCardProps) => {
+    onDragStart: (card: Card, layout: LayoutInfo) => void;
+    onDragMove: (dx: number, dy: number) => void;
+    onDragEnd: () => void;
+};
 
-    // Reference to store position of the card
-    const position = useRef(new Animated.ValueXY()).current;
+const DraggableCard = ({
+                           cardProps,
+                           onDragStart,
+                           onDragMove,
+                           onDragEnd,
+                       }: DraggableCardProps) => {
 
-    // Reference to store card itself
-    const cardRef = useRef<View | null>(null)
-    const initialX = useRef(0);
-    const initialY = useRef(0);
+    // Store the layout of the card inside the FlatList (absolute position)
+    const layoutRef = useRef<LayoutInfo>({
+        x: 0,
+        y: 0,
+        w: 0,
+        h: 0,
+    });
 
-    // State to track if the card is being dragged
-    const [dragging, setDragging] = React.useState(false);
+    const cardRef = useRef<View>(null)
 
-    // Create a pan responder to handle touch events
+    const pan = useRef(new Animated.ValueXY()).current;
+
+    const [dragged, setDragged] = useState(false);
+
     const panResponder = useRef(
         PanResponder.create({
             onStartShouldSetPanResponder: () => true,
             onMoveShouldSetPanResponder: () => true,
+
             onPanResponderGrant: () => {
-                // Grab absolute x and y coordinates of the card
-                if (!cardRef.current) return
-                let top: number, left: number
-                cardRef.current.measure((x, y, w, h, pageX, pageY) => {
-                    initialX.current = pageX;
-                    initialY.current = pageY;
-                })
+                cardRef.current?.measureInWindow((x, y, width, height) => {
+                    layoutRef.current = { x, y, w: width, h: height };
+                    onDragStart(cardProps.card!, layoutRef.current);
+                });
 
-                // When touch gesture starts, set dragging to true
-                setDragging(true);
-
-                // Move card into the top-level overlap in Board
-                setActiveCard(
-                    <Animated.View
-                        style={{
-                            position: "absolute",
-                            left: initialX.current,
-                            top: initialY.current,
-                            transform: position.getTranslateTransform(),
-                            zIndex: 9999,
-                        }}
-                    >
-                        <CustomCard card={cardProps.card}/>
-                    </Animated.View>
-                )
+                pan.setOffset({ x: 0, y: 0 });
+                pan.setValue({ x: 0, y: 0 });
+                setDragged(true);
             },
-            onPanResponderMove: Animated.event(
-                [null,
-                    {
-                        dx: position.x,
-                        dy: position.y,
-                    },],
-                {useNativeDriver: false},
-            ),
+
+            onPanResponderMove: (e, gestureState) => {
+                // gestureState.dx/dy are RELATIVE movement
+                pan.setValue({x: gestureState.dx, y: gestureState.dy});
+                onDragMove(gestureState.dx, gestureState.dy);
+            },
+
             onPanResponderRelease: () => {
-                // When touch gesture is released,
-                // set dragging to false
-                setDragging(false);
-                setActiveCard(null)
-            }
+                onDragEnd();
+                pan.flattenOffset();
+                pan.setValue({x: 0, y: 0});
+                setDragged(false);
+            },
         })
-    ).current
+    ).current;
+
+    // Capture real card position so ghost can start there
+    const handleLayout = (e: LayoutChangeEvent) => {
+        cardRef?.current?.measureInWindow((x, y, width, height) => {
+
+            console.log("View Layout",x, y);
+
+            layoutRef.current = {x, y, w: width, h: height};
+        })
+
+    };
+
     return (
-        <Animated.View
-            ref={cardRef}
-            style={[
-                {
-                    transform: position.getTranslateTransform(),
-                    opacity: dragging ? 0.8 : 1,
-                    zIndex: 50
-                },
-            ]}
-            {...panResponder.panHandlers}
-        >
-            <CustomCard card={cardProps.card} />
-        </Animated.View>
-    )
-}
-export default DraggableCard
+        <View ref={cardRef}  style={{opacity: dragged ? 0.6 : 1}}>
+            {/* This is the real in-hand card (NOT the ghost) */}
+                <Animated.View {...panResponder.panHandlers}>
+                    <CustomCard card={cardProps.card}/>
+                </Animated.View>
+        </View>
+    );
+};
+
+export default DraggableCard;

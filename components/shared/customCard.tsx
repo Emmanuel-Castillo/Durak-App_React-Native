@@ -19,7 +19,9 @@ const CustomCard = ({card, size, deckLength}: CardProps) => {
         <View className={"relative"}>
         <Image source={allCards[path as keyof typeof allCards]}
                style={{width: imgWidth, height: imgHeight}} resizeMode={"contain"}/>
-            {deckLength && (<Text className={"text-white text-xl absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"}>{deckLength}</Text>)}
+            {deckLength && (<View className="absolute inset-0 justify-center items-center">
+                <Text className="text text-xl flex-shrink" style={{minWidth: 24}}>{deckLength}</Text>
+            </View>)}
         </View>
     )
 }

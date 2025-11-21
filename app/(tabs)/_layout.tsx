@@ -19,11 +19,12 @@ const TabLayout = () => {
             tabBarActiveTintColor: activeColor,
             tabBarInactiveTintColor: inactiveColor,
             tabBarStyle: {
+                opacity: 0,
                 borderRadius: 40,
                 marginHorizontal: 20,
-                height: 0,
+                height: 80,
                 position: 'absolute',
-                bottom: 40,
+                top: 40,
                 paddingTop: 10,
                 backgroundColor: theme === 'dark' ? "#334155" : "#F1F5F9",
             }

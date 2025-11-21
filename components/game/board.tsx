@@ -1,5 +1,5 @@
-import {View, Text, FlatList} from 'react-native'
-import React from 'react'
+import {View, Text, FlatList, ScrollView, Animated} from 'react-native'
+import React, {useEffect, useRef, useState} from 'react'
 import {Card, Player} from '@/type'
 import CustomCard from "@/components/shared/customCard";
 import cn from "clsx";
@@ -31,6 +31,7 @@ function initTopPlayers(players: Player[]) {
             return []
     }
 }
+
 function initLeftPlayers(players: Player[]) {
     switch (players.length) {
         case 3:
@@ -45,6 +46,7 @@ function initLeftPlayers(players: Player[]) {
             return []
     }
 }
+
 function initRightPlayers(players: Player[]) {
     switch (players.length) {
         case 3:
@@ -58,6 +60,13 @@ function initRightPlayers(players: Player[]) {
     }
 }
 
+type GhostState = {
+    active: boolean;
+    card: Card | null;
+    startX: number;
+    startY: number;
+};
+
 const Board = ({players, tsarCard, deckLength, attackingCards}: BoardProps) => {
     const topPlayers: Player[] = initTopPlayers(players)
     const leftSidePlayers: Player[] = initLeftPlayers(players)
@@ -65,14 +74,68 @@ const Board = ({players, tsarCard, deckLength, attackingCards}: BoardProps) => {
     const userPlayer = players[0]
     const numColAtkDefCards = players.length > 2 ? 2 : 3
 
-    const [activeCard, setActiveCard] = React.useState<React.ReactElement | null>(null)
-    const passActiveCardToState = (card: React.ReactElement | null) => {
-        setActiveCard(card)
-    }
+    // Ghost card state
+    const [ghost, setGhost] = useState<GhostState>({
+        active: false,
+        card: null,
+        startX: 0,
+        startY: 0,
+    });
+
+    // Shared pan position for the ghost
+    const pan = useRef(new Animated.ValueXY()).current;
+
+    /** Called when user begins dragging a card */
+    const handleDragStart = (
+        card: Card,
+        layout: { x: number; y: number; w: number; h: number }
+    ) => {
+        // console.log("handleDragStart X: ", layout.x, " Y: ", layout.y)
+        setGhost({
+            active: true,
+            card,
+            startX: layout.x,
+            startY: layout.y,
+        });
+
+        // Reset ghost pan
+        pan.setValue({x: 0, y: 0});
+    };
+
+    const handleDragMove = (dx: number, dy: number) => {
+        pan.setValue({x: dx, y: dy});
+    };
+
+    /** When drag ends → remove ghost */
+    const handleDragEnd = () => {
+            setGhost((g) => ({...g, active: false, card: null}));
+    };
+
 
     return (
         <View className={"flex-1"}>
-            {activeCard}
+
+            {/* ========================= */}
+            {/*     GHOST OVERLAY CARD    */}
+            {/* ========================= */}
+            {ghost.active && ghost.card && (
+                <Animated.View
+                    pointerEvents="none"
+                    style={{
+                        position: "absolute",
+                        top: ghost.startY,
+                        left: ghost.startX,
+                        transform: [
+                            {translateX: pan.x},
+                            {translateY: pan.y},
+                        ],
+                        zIndex: 9999,
+                        elevation: 9999,
+                    }}
+                >
+                    <CustomCard card={ghost.card}/>
+                </Animated.View>
+            )}
             {/* Top Row */}
             <View className={"h-28"}>
                 {topPlayers.length > 0 && (
@@ -95,7 +158,7 @@ const Board = ({players, tsarCard, deckLength, attackingCards}: BoardProps) => {
             {/* Middle Row */}
             <View className={"flex-1 flex-row items-center justify-between"}>
                 {/* Left Side */}
-                <View className={"h-100"}>
+                <View className={"flex-1 items-center"}>
 
                     {leftSidePlayers.length > 0 && (
                         <FlatList data={leftSidePlayers}
@@ -115,22 +178,22 @@ const Board = ({players, tsarCard, deckLength, attackingCards}: BoardProps) => {
                 </View>
 
                 {/* Attacking / defending cards */}
-                <View className="p-2 pb-12">
-                        <FlatList
-                            data={attackingCards}
-                            scrollEnabled={true}
-                            numColumns={numColAtkDefCards}
-                            columnWrapperClassName="gap-2"
-                            contentContainerStyle={{flexGrow: 1}}
-                            contentContainerClassName="justify-center items-center gap-3 py-2"
-                            renderItem={({item: card}) => (
-                                <CustomCard card={card} size={70}/>
-                            )}
-                        />
+                <View className="p-2 pb-8 bg-gray-700 rounded">
+                    <FlatList
+                        data={attackingCards}
+                        scrollEnabled={true}
+                        numColumns={numColAtkDefCards}
+                        columnWrapperClassName="gap-2"
+                        contentContainerStyle={{flexGrow: 1}}
+                        contentContainerClassName="justify-center items-center gap-3 py-2"
+                        renderItem={({item: card}) => (
+                            <CustomCard card={card} size={70}/>
+                        )}
+                    />
                 </View>
 
                 {/* Right Side */}
-                <View className={"h-100"}>
+                <View className={"flex-1 items-center"}>
                     {rightSidePlayers.length > 0 && (
                         <FlatList data={rightSidePlayers}
                                   contentContainerClassName={"flex-1 justify-around"}
@@ -152,14 +215,23 @@ const Board = ({players, tsarCard, deckLength, attackingCards}: BoardProps) => {
             {/* Bottom Row (User) */}
             <View className={"bg-gray-600 p-2 pb-0 relative gap-2"}>
                 <View className={"absolute top-0 right-0 transform -translate-y-1/2 -translate-x-1/2  z-10"}>
-                    <TsarCardWithDeck tsarCard={tsarCard} deckLength={24}/>
+                    <TsarCardWithDeck tsarCard={tsarCard} deckLength={deckLength}/>
                 </View>
                 <Text className={"text text-2xl"}>
                     {userPlayer.user.username} - {userPlayer.role}
                 </Text>
-                <FlatList data={userPlayer.hand} className={"pb-8"} renderItem={({item}) =>
-                    (<DraggableCard cardProps={{card: item}} setActiveCard={passActiveCardToState}/>)
-                } horizontal={true}/>
+                <FlatList
+                    horizontal={true}
+                    className={"bg-gray-400"}
+                    style={{paddingBottom: 32}}
+                    persistentScrollbar
+                    data={userPlayer.hand} renderItem={({item: card}) =>
+                    <DraggableCard cardProps={{card}}
+                                   onDragStart={handleDragStart}
+                                   onDragMove={handleDragMove}
+                                   onDragEnd={handleDragEnd}
+                    />
+                }/>
             </View>
         </View>
     )

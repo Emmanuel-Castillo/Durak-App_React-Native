@@ -28,7 +28,7 @@ const Home = () => {
         nextPlayerUserId: 0
     }
 
-    const NUM_PLAYERS = 3
+    const NUM_PLAYERS = 2
     const players = Array(NUM_PLAYERS).fill(player)
 
     return (
@@ -40,13 +40,16 @@ const Home = () => {
         //     <RoomSelection/>
         // </SafeAreaView>
 
-    <SafeAreaView className={"themed-view gap-4 relative"}>
+    <SafeAreaView className={"flex-1 bg-white dark:bg-gray-800 gap-4 relative"}>
         <Board players={players} tsarCard={{
             value: '7',
             suit: 'hearts',
             rank: 7
         }} deckLength={23} attackingCards={Array(15).fill(tsarCard)}/>
+        <View className={"px-4"}>
+
         <Button title={"Leave Game"}/>
+        </View>
     </SafeAreaView>
     )
 }
