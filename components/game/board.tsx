@@ -1,157 +1,181 @@
-import {View, Text, FlatList, ScrollView, Animated} from 'react-native'
+import {View, Text, FlatList, ScrollView, Animated, LayoutChangeEvent, LayoutRectangle} from 'react-native'
 import React, {useEffect, useRef, useState} from 'react'
-import {Card, Player} from '@/type'
+import {Card, PlayedCards, Player} from '@/type'
 import CustomCard from "@/components/shared/customCard";
-import cn from "clsx";
-import OpponentHand from "@/components/game/opponentHand";
-import {rgbaColor} from "react-native-reanimated/lib/typescript/Colors";
-import {useRoomStore} from "@/store/room.store";
 import TsarCardWithDeck from "@/components/game/tsarCardWithDeck";
-import OpponentStats from "@/components/game/opponentStats";
 import DraggableCard from "@/components/shared/DraggableCard";
+import PlayedCardPair from "@/components/game/playedCardPair";
+import TopPlayerList from "@/components/game/topPlayerList";
+import LeftPlayersList from "@/components/game/leftPlayersList";
+import RightPlayersList from "@/components/game/rightPlayersList";
+import {initLeftPlayers, initRightPlayers, initTopPlayers} from "@/lib/sortPlayers";
 
 type BoardProps = {
     players: Player[],
     tsarCard: Card,
     deckLength: number,
-    attackingCards: Card[]
-
-}
-
-function initTopPlayers(players: Player[]) {
-    switch (players.length) {
-        case 2:
-            return [players[1]]
-        case 4:
-            return [players[2]]
-        case 5:
-        case 6:
-            return [players[3]]
-        default:
-            return []
-    }
-}
-
-function initLeftPlayers(players: Player[]) {
-    switch (players.length) {
-        case 3:
-            return [players[2]]
-        case 4:
-            return [players[3]]
-        case 5:
-            return [players[4]]
-        case 6:
-            return [players[4], players[3]]
-        default:
-            return []
-    }
-}
-
-function initRightPlayers(players: Player[]) {
-    switch (players.length) {
-        case 3:
-        case 4:
-            return [players[1]]
-        case 5:
-        case 6:
-            return [players[1], players[2]]
-        default:
-            return []
-    }
+    playedCards: PlayedCards[],
+    addDefendingCard: (attackingCard: Card, defendingCard: Card) => void
 }
 
 type GhostState = {
-    active: boolean;
     card: Card | null;
     startX: number;
     startY: number;
+    hoveredAttackingCard: Card | null
 };
 
-const Board = ({players, tsarCard, deckLength, attackingCards}: BoardProps) => {
+const Board = ({players, tsarCard, deckLength, playedCards, addDefendingCard}: BoardProps) => {
     const topPlayers: Player[] = initTopPlayers(players)
     const leftSidePlayers: Player[] = initLeftPlayers(players)
     const rightSidePlayers: Player[] = initRightPlayers(players)
-    const userPlayer = players[0]
     const numColAtkDefCards = players.length > 2 ? 2 : 3
+
+    // TESTING
+    const [player, setPlayer] = useState<Player>({
+        user: {
+            id: 0,
+            created_at: new Date(),
+            username: 'MannyDev',
+            email: 'm@gmail.com',
+            avatar: undefined,
+            num_wins: 0,
+            account_id: 'asdqwerasdf'
+        },
+        hand: [
+            {value: '6', suit: 'diamonds', rank: 6},
+            {value: '7', suit: 'hearts', rank: 7},
+            {value: '8', suit: 'clubs', rank: 8},
+            {value: '9', suit: 'diamonds', rank: 9},
+            {value: 'J', suit: 'hearts', rank: 11},
+        ],
+        role: "Attacker",
+        nextPlayerUserId: 0
+    })
+    const userPlayer = player
+
+    const playedCardsRefs = useRef<
+        Map<Card, React.RefObject<View | null>>>
+    (new Map());
+
+    useEffect(() => {
+        // Set the playedCardsRefs Map each time playedCards updates
+        playedCards.map(
+            (item, index) => {
+                if (!item.defendingCard) {
+                    const itemRef = playedCardsRefs.current.get(item.attackingCard)
+                    playedCardsRefs.current.set(item.attackingCard, itemRef ? itemRef : React.createRef<View>())
+                }
+            }
+        );
+    }, [playedCards]);
 
     // Ghost card state
     const [ghost, setGhost] = useState<GhostState>({
-        active: false,
         card: null,
         startX: 0,
         startY: 0,
+        hoveredAttackingCard: null
     });
 
-    // Shared pan position for the ghost
-    const pan = useRef(new Animated.ValueXY()).current;
+    // Reference for the ghost card View
+    const ghostRef = useRef<View>(null)
 
-    /** Called when user begins dragging a card */
+    // Persisted pan position for the ghost card View
+    const ghostPan = useRef(new Animated.ValueXY()).current;
+
+    const defCard = useRef<Card | null>(null);
+    const atkCard = useRef<Card | null>(null);
+
     const handleDragStart = (
         card: Card,
         layout: { x: number; y: number; w: number; h: number }
     ) => {
-        // console.log("handleDragStart X: ", layout.x, " Y: ", layout.y)
+        defCard.current = card;
         setGhost({
-            active: true,
             card,
             startX: layout.x,
             startY: layout.y,
+            hoveredAttackingCard: null,
         });
-
-        // Reset ghost pan
-        pan.setValue({x: 0, y: 0});
+        ghostPan.setValue({x: 0, y: 0}); // Reset
     };
 
     const handleDragMove = (dx: number, dy: number) => {
-        pan.setValue({x: dx, y: dy});
+        ghostPan.setValue({x: dx, y: dy});
+        ghostRef.current?.measureInWindow((x, y, width, height) => {
+            const draggedRect: LayoutRectangle = {x, y, width: width, height: height};
+            // Check for overlap with any playedCard pair
+            let overlap = false
+            playedCardsRefs.current.forEach((ref, card) => {
+                if (ref.current) {
+                    ref.current.measureInWindow((x, y, width, height) => {
+                        const layout = {x, y, width, height};
+                        const refOverlap = rectsOverlap(draggedRect, layout)
+                        if (refOverlap) {
+                            atkCard.current = card
+                            setGhost(g => ({...g, hoveredAttackingCard: card}));
+                            overlap = true;
+                        }
+                    });
+                }
+            });
+            if (!overlap) {
+                setGhost(g => ({...g, hoveredAttackingCard: null}));
+            }
+
+        });
     };
+
+    function rectsOverlap(a: LayoutRectangle, b: LayoutRectangle) {
+        return !(
+            a.x + a.width < b.x ||
+            a.x > b.x + b.width ||
+            a.y + a.height < b.y ||
+            a.y > b.y + b.height
+        )
+    }
 
     /** When drag ends → remove ghost */
     const handleDragEnd = () => {
-            setGhost((g) => ({...g, active: false, card: null}));
+        console.log("released. def: ", defCard.current, " atk: ", atkCard.current)
+        if (atkCard.current && defCard.current) {
+            console.log("adding def card: ", ghost.card, "to atk card: ", ghost.hoveredAttackingCard)
+            addDefendingCard(atkCard.current, defCard.current)
+        }
+        setGhost((g) => ({...g, active: false, card: null, hoveredAttackingCard: null}));
+        defCard.current = null;
+        atkCard.current = null;
     };
-
 
     return (
         <View className={"flex-1"}>
 
-            {/* ========================= */}
-            {/*     GHOST OVERLAY CARD    */}
-            {/* ========================= */}
-            {ghost.active && ghost.card && (
+            {/* Ghost card */}
+            {ghost.card && (
                 <Animated.View
+                    ref={ghostRef}
                     pointerEvents="none"
                     style={{
                         position: "absolute",
                         top: ghost.startY,
                         left: ghost.startX,
                         transform: [
-                            {translateX: pan.x},
-                            {translateY: pan.y},
+                            {translateX: ghostPan.x},
+                            {translateY: ghostPan.y},
                         ],
                         zIndex: 9999,
                         elevation: 9999,
                     }}
                 >
-                    <CustomCard card={ghost.card}/>
+                    <CustomCard card={ghost.card} size={60}/>
                 </Animated.View>
             )}
+
             {/* Top Row */}
             <View className={"h-28"}>
                 {topPlayers.length > 0 && (
-                    <FlatList
-                        contentContainerClassName="items-center justify-center"
-                        data={topPlayers} renderItem={({item: player}) =>
-                        <View className={"relative"}>
-                            <OpponentStats username={player.user.username}
-                                           role={player.role!}
-                                           absolutePosition={{
-                                               top: 0,
-                                               left: -30
-                                           }}/>
-                            <OpponentHand hand={player.hand} rotateHand={"180"}/>
-                        </View>
-                    }/>
+                    <TopPlayerList topPlayers={topPlayers}/>
                 )}
             </View>
 
@@ -159,35 +183,29 @@ const Board = ({players, tsarCard, deckLength, attackingCards}: BoardProps) => {
             <View className={"flex-1 flex-row items-center justify-between"}>
                 {/* Left Side */}
                 <View className={"flex-1 items-center"}>
-
                     {leftSidePlayers.length > 0 && (
-                        <FlatList data={leftSidePlayers}
-                                  contentContainerClassName={"flex-1 justify-around"}
-                                  renderItem={({item: player}) => (
-                                      <View className={"relative"}>
-                                          <OpponentStats username={player.user.username}
-                                                         role={player.role!}
-                                                         absolutePosition={{
-                                                             top: -20,
-                                                             left: 0
-                                                         }}/>
-                                          <OpponentHand hand={player.hand} rotateHand={"90"}/>
-                                      </View>
-                                  )}/>
+                        <LeftPlayersList leftSidePlayers={leftSidePlayers}/>
                     )}
                 </View>
 
                 {/* Attacking / defending cards */}
-                <View className="p-2 pb-8 bg-gray-700 rounded">
+                <View className="p-2 pb-8 rounded">
                     <FlatList
-                        data={attackingCards}
+                        data={playedCards}
                         scrollEnabled={true}
                         numColumns={numColAtkDefCards}
                         columnWrapperClassName="gap-2"
                         contentContainerStyle={{flexGrow: 1}}
                         contentContainerClassName="justify-center items-center gap-3 py-2"
-                        renderItem={({item: card}) => (
-                            <CustomCard card={card} size={70}/>
+                        keyExtractor={(item, index) => index.toString()}
+                        renderItem={({item: pair, index}) => (
+                            <View
+                                ref={playedCardsRefs.current.get(pair.attackingCard)}
+                            >
+                                <PlayedCardPair pair={pair}
+                                                hoveredOver={ghost.hoveredAttackingCard === pair.attackingCard}/>
+                            </View>
+
                         )}
                     />
                 </View>
@@ -195,19 +213,7 @@ const Board = ({players, tsarCard, deckLength, attackingCards}: BoardProps) => {
                 {/* Right Side */}
                 <View className={"flex-1 items-center"}>
                     {rightSidePlayers.length > 0 && (
-                        <FlatList data={rightSidePlayers}
-                                  contentContainerClassName={"flex-1 justify-around"}
-                                  renderItem={({item: player}) => (
-                                      <View className={"relative"}>
-                                          <OpponentStats username={player.user.username}
-                                                         role={player.role!}
-                                                         absolutePosition={{
-                                                             top: -20,
-                                                             right: 0
-                                                         }}/>
-                                          <OpponentHand hand={player.hand} rotateHand={"-90"}/>
-                                      </View>
-                                  )}/>
+                        <RightPlayersList rightSidePlayers={rightSidePlayers}/>
                     )}
                 </View>
             </View>
@@ -229,8 +235,7 @@ const Board = ({players, tsarCard, deckLength, attackingCards}: BoardProps) => {
                     <DraggableCard cardProps={{card}}
                                    onDragStart={handleDragStart}
                                    onDragMove={handleDragMove}
-                                   onDragEnd={handleDragEnd}
-                    />
+                                   onDragEnd={handleDragEnd}/>
                 }/>
             </View>
         </View>

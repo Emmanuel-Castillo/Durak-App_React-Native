@@ -20,7 +20,7 @@ const Game = () => {
 
     return (
         <SafeAreaView className={"themed-view gap-4 relative"}>
-            <Board players={players} tsarCard={tsarCard} deckLength={deckLength} attackingCards={[]}/>
+            <Board players={players} tsarCard={tsarCard} deckLength={deckLength} playedCards={[]}/>
             <Button title={"Leave Game"}/>
         </SafeAreaView>
     )

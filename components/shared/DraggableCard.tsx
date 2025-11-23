@@ -3,10 +3,10 @@ import {
     View,
     Animated,
     PanResponder,
-    LayoutChangeEvent,
+    LayoutChangeEvent, LayoutRectangle,
 } from "react-native";
 import CustomCard, {CardProps} from "@/components/shared/customCard";
-import {Card} from "@/type";
+import {Card, PlayedCards} from "@/type";
 
 type LayoutInfo = {
     x: number;
@@ -54,6 +54,7 @@ const DraggableCard = ({
                     onDragStart(cardProps.card!, layoutRef.current);
                 });
 
+
                 pan.setOffset({ x: 0, y: 0 });
                 pan.setValue({ x: 0, y: 0 });
                 setDragged(true);
@@ -73,17 +74,6 @@ const DraggableCard = ({
             },
         })
     ).current;
-
-    // Capture real card position so ghost can start there
-    const handleLayout = (e: LayoutChangeEvent) => {
-        cardRef?.current?.measureInWindow((x, y, width, height) => {
-
-            console.log("View Layout",x, y);
-
-            layoutRef.current = {x, y, w: width, h: height};
-        })
-
-    };
 
     return (
         <View ref={cardRef}  style={{opacity: dragged ? 0.6 : 1}}>

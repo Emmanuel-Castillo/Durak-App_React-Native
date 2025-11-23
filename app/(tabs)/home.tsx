@@ -1,18 +1,16 @@
-import {View, Text, TouchableOpacity, Button} from 'react-native'
-import React from 'react'
+import {Button, View} from 'react-native'
+import React, {useState} from 'react'
 import {SafeAreaView} from "react-native-safe-area-context";
-import RoomSelection from "@/components/home/room-selection";
-import CustomCard from "@/components/shared/customCard";
 import Board from "@/components/game/board";
-import TsarCardWithDeck from "@/components/game/tsarCardWithDeck";
-import {Card, Player} from "@/type";
+import {Card, PlayedCards, Player} from "@/type";
 
 const Home = () => {
-    const tsarCard : Card = {
+    const tsarCard: Card = {
         value: '6',
         suit: 'hearts',
         rank: 6
     }
+
     const player: Player = {
         user: {
             id: 0,
@@ -28,6 +26,21 @@ const Home = () => {
         nextPlayerUserId: 0
     }
 
+    const [playedCards, setPlayedCards] = useState<PlayedCards[]>([
+        {attackingCard: tsarCard, defendingCard: null},
+        {attackingCard: { value: 'A', suit: 'hearts', rank: 14 }, defendingCard: null},
+        {attackingCard: {value: 'K', suit: 'diamonds', rank: 13}, defendingCard: tsarCard}
+    ])
+
+    const addDefendingCard = (attackingCard: Card, defendingCard: Card) => {
+        setPlayedCards((prev) => {
+            return prev.map(p => {
+                if (p.attackingCard === attackingCard) p.defendingCard = defendingCard
+                return p
+            })
+        })
+    }
+
     const NUM_PLAYERS = 2
     const players = Array(NUM_PLAYERS).fill(player)
 
@@ -40,17 +53,19 @@ const Home = () => {
         //     <RoomSelection/>
         // </SafeAreaView>
 
-    <SafeAreaView className={"flex-1 bg-white dark:bg-gray-800 gap-4 relative"}>
-        <Board players={players} tsarCard={{
-            value: '7',
-            suit: 'hearts',
-            rank: 7
-        }} deckLength={23} attackingCards={Array(15).fill(tsarCard)}/>
-        <View className={"px-4"}>
+        <SafeAreaView className={"flex-1 bg-white dark:bg-gray-800 gap-4 relative"}>
+            <Board players={players} tsarCard={{
+                value: '7',
+                suit: 'hearts',
+                rank: 7
+            }} deckLength={23} playedCards={playedCards}
+            addDefendingCard={addDefendingCard}
+            />
+            <View className={"px-4"}>
 
-        <Button title={"Leave Game"}/>
-        </View>
-    </SafeAreaView>
+                <Button title={"Leave Game"}/>
+            </View>
+        </SafeAreaView>
     )
 }
 export default Home

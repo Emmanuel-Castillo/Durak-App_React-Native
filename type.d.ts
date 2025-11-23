@@ -35,6 +35,10 @@ export type Game = {
     deck: Card[];
     tsarCard: Card;
     players: Player[];
-    attackingCards: Card[];
-    counteredCards: Card[];
+    playedCards: PlayedCards[]
+}
+
+export type PlayedCards = {
+    attackingCard: Card;
+    defendingCard: Card | null;
 }
