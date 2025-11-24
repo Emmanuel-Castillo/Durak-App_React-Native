@@ -5,20 +5,22 @@ import {useRoomStore} from "@/store/room.store";
 import {Redirect} from "expo-router";
 import UserRow from "@/components/shared/UserRow";
 import {useAuthStore} from "@/store/auth.store";
+import {useGameStore} from "@/store/game.store";
 
 const Room = () => {
     const {socket, room, leaveRoom, removeFromRoom} = useRoomStore()
+    const {game, startGame} = useGameStore()
     const {user} = useAuthStore()
 
     if (!user || !socket || !room) return <Redirect href={"/(tabs)/home"}/>
-    if (room.game) return <Redirect href={"/game"}/>
+    if (room && game) return <Redirect href={"/game"}/>
 
     const isHost = room.hostId === user.account_id
     const canStartGame = isHost && room.users.length > 1
 
-    const startGame = () => {
-        socket.emit('startGame')
-    }
+    // const startGame = () => {
+    //     socket.emit('startGame')
+    // }
 
     return (
         <SafeAreaView className={"themed-view"}>

@@ -8,7 +8,7 @@ import {
 import CustomCard, {CardProps} from "@/components/shared/customCard";
 import {Card, PlayedCards} from "@/type";
 
-type LayoutInfo = {
+export type LayoutInfo = {
     x: number;
     y: number;
     w: number;

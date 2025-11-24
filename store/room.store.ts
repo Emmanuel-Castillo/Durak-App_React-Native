@@ -38,14 +38,14 @@ export const useRoomStore = create<RoomState>((set) => ({
         socket.on("roomData", (room: Room) => {
             set({room: room});
         })
-        socket.on("gameData", (game: Game) => {
-            const room = useRoomStore.getState().room;
-            if (!room) return console.warn("No room found. Cannot update game data.");
-
-            // Sort players starting with own User
-            game.players = sortPlayersStartingWithUser(user.account_id, game.players)
-            set({room: {...room, game: game}});
-        })
+        // socket.on("gameData", (game: Game) => {
+        //     const room = useRoomStore.getState().room;
+        //     if (!room) return console.warn("No room found. Cannot update game data.");
+        //
+        //     // Sort players starting with own User
+        //     game.players = sortPlayersStartingWithUser(user.account_id, game.players)
+        //     set({room: {...room, game: game}});
+        // })
     },
     createRoom: (roomName) => {
         const socket = useRoomStore.getState().socket;
