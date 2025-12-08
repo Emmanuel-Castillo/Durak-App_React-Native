@@ -8,20 +8,14 @@ import Board from "@/components/game/board";
 import {useGameStore} from "@/store/game.store";
 
 const Game = () => {
-    const {socket, game} = useGameStore()
+    const {game, comments} = useGameStore()
     if (
-        // !socket ||
         !game) return <Redirect href={"/room"}/>
-
-    const players = game.players
-    const playedCards = game.playedCards
-    const tsarCard = game.tsarCard
-    const deckLength = game.deck.length
 
     return (
         <SafeAreaView className={"themed-view gap-4 relative"}>
-            <Board players={players} tsarCard={tsarCard} deckLength={deckLength} playedCards={playedCards}/>
-            <Button title={"Leave Game"}/>
+            <Board game={game} comments={comments}/>
+            {/*<Button title={"Leave Game"}/>*/}
         </SafeAreaView>
     )
 }

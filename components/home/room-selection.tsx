@@ -4,6 +4,7 @@ import {SafeAreaView} from "react-native-safe-area-context";
 import CustomTextInput from "@/components/shared/CustomTextInput";
 import {Redirect, useRouter} from "expo-router";
 import {useRoomStore} from "@/store/room.store";
+import {useGameStore} from "@/store/game.store";
 
 const RoomSelection = () => {
     const [roomName, setRoomName] = React.useState("");
@@ -11,9 +12,11 @@ const RoomSelection = () => {
     const [friendsOnly, setFriendsOnly] = React.useState(false);
     const [allowJoiningRandomRoom, setAllowJoiningRandomRoom] = React.useState(false);
     const {socket, room, joinRoom, createRoom, connectSocket } = useRoomStore()
+    const { listenForGameData } = useGameStore()
 
     useEffect(() => {
         connectSocket()
+        // listenForGameData()
     }, []);
 
     if (socket && room) return <Redirect href={"/room"} />

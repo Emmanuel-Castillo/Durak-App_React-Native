@@ -1,220 +1,250 @@
-import {View, Text, FlatList, ScrollView, Animated, LayoutChangeEvent, LayoutRectangle} from 'react-native'
-import React, {useEffect, useRef, useState} from 'react'
-import {Card, PlayedCards, Player} from '@/type'
+import {
+    View,
+    Text,
+    Animated,
+    LayoutRectangle, FlatList, TouchableOpacity
+} from 'react-native'
+import React, {RefObject, useEffect, useRef, useState} from 'react'
+import {Card, Game, PlayedCards, Player} from '@/type'
 import CustomCard from "@/components/shared/customCard";
-import TsarCardWithDeck from "@/components/game/tsarCardWithDeck";
-import DraggableCard from "@/components/shared/DraggableCard";
-import PlayedCardPair from "@/components/game/playedCardPair";
-import TopPlayerList from "@/components/game/topPlayerList";
-import LeftPlayersList from "@/components/game/leftPlayersList";
-import RightPlayersList from "@/components/game/rightPlayersList";
 import {initLeftPlayers, initRightPlayers, initTopPlayers} from "@/lib/sortPlayers";
 import {layoutsOverlap} from "@/lib/layoutsOverlap";
 import cn from "clsx";
-import DefenderHand from "@/components/game/defenderHand";
-import AttackerHand from "@/components/game/attackerHand";
 import {useGameStore} from "@/store/game.store";
-
-type BoardProps = {
-    players: Player[],
-    tsarCard: Card,
-    deckLength: number,
-    playedCards: PlayedCards[],
-}
+import WinnersList from "@/components/game/winnersList";
+import {useRoomStore} from "@/store/room.store";
+import {Redirect} from "expo-router";
+import {useAuthStore} from "@/store/auth.store";
+import UserPlayerRow from "@/components/game/UserPlayerRow";
+import PlayedCardsList from "@/components/game/PlayedCardsList";
+import PlayerList from "@/components/game/PlayerList";
+import OptionsMenu from "@/components/game/OptionsMenu";
+import {AntDesign} from "@expo/vector-icons";
 
 type GhostCardState = {
     card: Card | null;
     startX: number;
     startY: number;
-    hoveredBoard: boolean
-    hoveredAttackingCard: Card | null
 };
 
-const Board = ({players, tsarCard, deckLength, playedCards}: BoardProps) => {
-    const topPlayers: Player[] = initTopPlayers(players)
-    const leftSidePlayers: Player[] = initLeftPlayers(players)
-    const rightSidePlayers: Player[] = initRightPlayers(players)
-    const numColAtkDefCards = players.length > 2 ? 2 : 3
+const Board = ({comments}: { game?: Game, comments: string[] }) => {
+    const {game, canCounter, player, showAllComments} = useGameStore();
+    const {room} = useRoomStore()
+    const {user} = useAuthStore()
 
-    // Set the playedCardsRefs Map each time playedCards updates
-    useEffect(() => {
-        playedCards.map(
-            (item, index) => {
-                if (!item.defendingCard) {
-                    const itemRef = playedCardsRefs.current.get(item)
-                    playedCardsRefs.current.set(item, itemRef ? itemRef : React.createRef<View>())
-                } else {
-                    playedCardsRefs.current.delete(item)
-                }
-            }
-        );
-    }, [playedCards]);
-
-
-
-    const [ghost, setGhost] = useState<GhostCardState>({
+    const [ghostCard, setGhostCard] = useState<GhostCardState>({
         card: null,
         startX: 0,
         startY: 0,
-        hoveredAttackingCard: null,
-        hoveredBoard: false,
     });
-    const playedCardsRefs = useRef<Map<PlayedCards, React.RefObject<View | null>>>(new Map());     // Map of View references ONLY for playedCard pairs with JUST ATK CARD
-    const ghostRef = useRef<View>(null)                                     // Reference for the ghost card View to grab its absolute positioning and dimensions
-    const ghostPan = useRef(new Animated.ValueXY()).current;                // Persisted pan position for transforming ghost card View
-    const playedCardsViewRef = useRef<View | null>(null);
+    const playedCardsMapRef = useRef<Map<PlayedCards, React.RefObject<View | null>>>(new Map());     // Map of View references for playedCard pairs with JUST ATK CARD
+    const getPlayedCardsRef = (playedCards: PlayedCards) => {
+        return playedCardsMapRef.current.get(playedCards);
+    }
+    const ghostCardRef = useRef<View>(null)                                                                     // Reference for the ghost card View to grab its absolute positioning and dimensions
+    const ghostPanRef = useRef(new Animated.ValueXY()).current;                                                                    // Pan transform for ghostCard Ref
+    const playedCardsViewRef = useRef<View | null>(null);                                                   // Reference to parent View of the playedCards FlatList
 
-    // TESTING
-    const {canCounter, player} = useGameStore()
-    if (!player) return null;
+    const hoveredOverBoardRef = useRef<boolean>(false);
+    const [hoveredOverBoard, setHoveredOverBoard] = useState<boolean>(false);
+    const hoveredPlayedCardsRef = useRef<PlayedCards | null>(null);
+    const [hoveredPlayedCards, setHoveredPlayedCards] = useState<PlayedCards | null>(null);
+    const playerCardBoardRefs: PlayerCardBoardRefs = {
+        hoveredOverBoardRef, hoveredPlayedCardsRef
+    }
 
-    // When user card starts dragging, assign it and it's position to ghost state
-    const handleDragStart = (card: Card, layout: { x: number; y: number; w: number; h: number }) => {
-        setGhost({
+    // Update the playedCardsMapRef each time playedCards updates
+    useEffect(() => {
+        game && game.playedCards.map(
+            (item, index) => {
+                if (!item.defendingCard) {
+                    const itemRef = playedCardsMapRef.current.get(item)
+                    playedCardsMapRef.current.set(item, itemRef ? itemRef : React.createRef<View>())
+                } else {
+                    playedCardsMapRef.current.delete(item)
+                }
+            }
+        );
+    }, [game]);
+
+    // When user starts dragging a card, set the ghostCard
+    const handleDragStart = (card: Card, layout: {
+        x: number;
+        y: number;
+        w: number;
+        h: number
+    }) => {
+        setGhostCard({
             card,
             startX: layout.x,
             startY: layout.y,
-            hoveredAttackingCard: null,
-            hoveredBoard: false
         });
-        ghostPan.setValue({x: 0, y: 0}); // Reset pan
+        ghostPanRef.setValue({x: 0, y: 0}); // Reset pan
     };
 
     // While user card is being "dragged", apply pan to the ghost card and update ghost state if needed
-    const handleDragMove = (dx: number, dy: number, hoveredAttackingCard?: Card | null, hoveredBoard?: boolean) => {
-        ghostPan.setValue({x: dx, y: dy});  // Apply pan
+    const handleDragMove = (dx: number, dy: number) => {
+        if (!ghostCardRef.current) return;
+        ghostPanRef.setValue({x: dx, y: dy});  // Apply pan
 
-        if (hoveredAttackingCard !== undefined) {
-            setGhost(g => ({...g, hoveredAttackingCard: hoveredAttackingCard}))
-        }
-        if (hoveredBoard !== undefined) {
-            setGhost(g => ({...g, hoveredBoard: hoveredBoard}))
-        }
+        // Check if ghost card overlaps with any playedCard pair or parent view ref
+        let pairOverlap = false, boardOverlap = false;
+        ghostCardRef.current.measureInWindow((x, y, width, height) => {
+            const ghostCardLayout: LayoutRectangle = {x, y, width: width, height: height};
+
+            // Check overlap in playedCard pair
+            playedCardsMapRef.current.forEach((ref, pair) => {
+                if (!ref.current) return;
+                ref.current.measureInWindow((x, y, width, height) => {
+                    const refLayout = {x, y, width, height};
+                    if (layoutsOverlap(ghostCardLayout, refLayout)) {
+                        pairOverlap = true, boardOverlap = true;
+                        hoveredPlayedCardsRef.current = pair
+                        setHoveredPlayedCards(pair)
+                        hoveredOverBoardRef.current = true
+                        setHoveredOverBoard(true)
+                    }
+                });
+            });
+
+            // If no playedCards pair overlap, check for board overlap
+            if (!pairOverlap) {
+                setHoveredPlayedCards(null)
+                hoveredPlayedCardsRef.current = null
+                if (!playedCardsViewRef.current) return;
+                playedCardsViewRef.current.measureInWindow((x, y, width, height) => {
+                    const refLayout = {x, y, width, height};
+                    if (layoutsOverlap(ghostCardLayout, refLayout)) {
+                        boardOverlap = true
+                        hoveredOverBoardRef.current = true
+                        setHoveredOverBoard(true)
+                    }
+                })
+            }
+
+            if (!boardOverlap) {
+                setHoveredOverBoard(false)
+                hoveredOverBoardRef.current = false
+            }
+        })
     };
 
     // When ending user card drag, reset ghost and refs
     const handleDragEnd = () => {
-        setGhost((g) => ({...g, active: false, card: null, hoveredAttackingCard: null, hoveredBoard: false}));
+        hoveredOverBoardRef.current = false
+        hoveredPlayedCardsRef.current = null
+        setHoveredPlayedCards(null)
+        setHoveredOverBoard(false)
+        setGhostCard((g) => ({...g, active: false, card: null}));
     };
 
+    const ghostCardDragImpl: CardDragImpl = {
+        handleDragStart,
+        handleDragMove,
+        handleDragEnd
+    }
+
+    if (!user || !player || !game || !room) return <Redirect href={"/(tabs)/home"}/>
+    const players = game.players
+    const playedCards = game.playedCards
+
+    const topPlayers: Player[] = initTopPlayers(players)
+    const leftSidePlayers: Player[] = initLeftPlayers(players)
+    const rightSidePlayers: Player[] = initRightPlayers(players)
+    const numColAtkDefCards = players.length > 2 ? 2 : 3
     return (
         <View className={"flex-1"}>
+            {showAllComments &&
+                <View className={"absolute inset-0 bg-gray-800/20 p-4 items-center justify-center"}
+                      style={{zIndex: 200}}>
+                    <FlatList
+                        className={"bg-orange-800 p-2 rounded gap-2"} data={comments} renderItem={({item}) =>
+                        <View className={"bg-orange-700 p-2 rounded"}>
+                            <Text>{item}</Text>
+                        </View>
+                    }
+                        ListHeaderComponent={<TouchableOpacity onPress={() => useGameStore.setState({showAllComments: false})}>
+                            <AntDesign name="close" size={24} color="white"/>
+                        </TouchableOpacity>}
+                    />
+                </View>
+            }
+
+            {/* Winners list when game ends*/}
+            {game.gameState === "Ended" && <WinnersList/>}
 
             {/* Ghost card */}
-            {ghost.card && (
+            {ghostCard.card && (
                 <Animated.View
-                    ref={ghostRef}
+                    ref={ghostCardRef}
                     pointerEvents="none"
                     style={{
                         position: "absolute",
-                        top: ghost.startY,
-                        left: ghost.startX,
+                        top: ghostCard.startY,
+                        left: ghostCard.startX,
                         transform: [
-                            {translateX: ghostPan.x},
-                            {translateY: ghostPan.y},
+                            {translateX: ghostPanRef.x},
+                            {translateY: ghostPanRef.y},
                         ],
-                        zIndex: 9999,
-                        elevation: 9999,
+                        zIndex: 100,
+                        elevation: 100,
                     }}
                 >
-                    <CustomCard card={ghost.card} size={60}/>
+                    <CustomCard card={ghostCard.card} size={60}/>
                 </Animated.View>
             )}
 
+            <View className={"absolute top-4 left-2"}>
+                <OptionsMenu/>
+            </View>
+
             {/* Top Row */}
             <View className={"h-28"}>
-                {topPlayers.length > 0 && (
-                    <TopPlayerList topPlayers={topPlayers}/>
-                )}
+                <PlayerList players={topPlayers} config={"Top"}/>
             </View>
 
             {/* Middle Row */}
             <View className={"flex-1 flex-row items-center justify-between"}>
                 {/* Left Side */}
                 <View className={"flex-1 items-center"}>
-                    {leftSidePlayers.length > 0 && (
-                        <LeftPlayersList leftSidePlayers={leftSidePlayers}/>
-                    )}
+                    <PlayerList players={leftSidePlayers} config={"Left"}/>
                 </View>
 
                 {/* Attacking / defending cards */}
-                <View className={cn("p-2 pb-8 rounded relative", canCounter && "bg-gray-700")} ref={playedCardsViewRef}
-                    style={{
-                        borderStyle:"solid",
-                        borderColor:"white",
-                        borderWidth: ghost.hoveredBoard ? 2: 0
-                    }}
+                <View className={cn("p-2 pb-8 rounded relative", (canCounter || hoveredOverBoard) && "bg-gray-700")}
+                      ref={playedCardsViewRef}
                 >
-                    <FlatList
-                        data={playedCards}
-                        scrollEnabled={true}
-                        numColumns={numColAtkDefCards}
-                        columnWrapperClassName="gap-2"
-                        contentContainerStyle={{flexGrow: 1}}
-                        contentContainerClassName="justify-center items-center gap-3 py-2"
-                        keyExtractor={(item, index) => index.toString()}
-                        renderItem={({item: pair, index}) => (
-                            <View
-                                ref={playedCardsRefs.current.get(pair)}
-                            >
-                                <PlayedCardPair pair={pair}
-                                                hoveredOver={ghost.hoveredAttackingCard === pair.attackingCard}/>
-                            </View>
-
-                        )}
-                    />
-                    {canCounter && <Text className={"text text-2xl text-center absolute bottom-4 left-1/2 transform -translate-x-1/2"}>Counter!</Text>}
+                    <PlayedCardsList playedCards={playedCards} numColumns={numColAtkDefCards}
+                                     getPlayedCardsRef={getPlayedCardsRef} hoveredPlayedCards={hoveredPlayedCards}/>
+                    {canCounter && <Text
+                        className={"text text-2xl text-center absolute bottom-4 left-1/2 transform -translate-x-1/2"}>Counter!</Text>}
                 </View>
 
                 {/* Right Side */}
                 <View className={"flex-1 items-center"}>
-                    {rightSidePlayers.length > 0 && (
-                        <RightPlayersList rightSidePlayers={rightSidePlayers}/>
-                    )}
+                    <PlayerList players={rightSidePlayers} config={"Right"}/>
                 </View>
             </View>
 
             {/* Bottom Row (User) */}
-            <View className={"bg-gray-600 p-2 pb-0 relative gap-2"}>
-                <View className={"absolute top-0 right-0 transform -translate-y-1/2 -translate-x-1/2 z-10"}>
-                    <TsarCardWithDeck tsarCard={tsarCard} deckLength={deckLength}/>
-                </View>
-                <Text className={"text text-2xl"}>
-                    {player.user.username} - {player.role}
-                </Text>
-                {/*<FlatList*/}
-                {/*    horizontal={true}*/}
-                {/*    className={"bg-gray-400"}*/}
-                {/*    style={{paddingBottom: 32}}*/}
-                {/*    persistentScrollbar*/}
-                {/*    data={userPlayer.hand} renderItem={({item: card}) =>*/}
-                {/*    <DraggableCard cardProps={{card}}*/}
-                {/*                   onDragStart={handleDragStart}*/}
-                {/*                   onDragMove={handleDragMove}*/}
-                {/*                   onDragEnd={handleDragEnd}/>*/}
-                {/*}/>*/}
-                {player.role === "Defender" ?
-                    <DefenderHand
-
-                        handleDragStart={handleDragStart}
-                        handleDragMove={handleDragMove}
-                        handleDragEnd={handleDragEnd}
-                        player={player}
-                        ghostRef={ghostRef}
-                        playedCardsRefs={playedCardsRefs}
-                        playedCardsViewRef={playedCardsViewRef}
-                    /> :
-                    <AttackerHand
-                        handleDragStart={handleDragStart}
-                        handleDragMove={handleDragMove}
-                        handleDragEnd={handleDragEnd}
-                        player={player}
-                        ghostRef={ghostRef}
-                        playedCardsViewRef={playedCardsViewRef}
-                    />}
-
-            </View>
+            <UserPlayerRow playerCardBoardRefs={playerCardBoardRefs} cardDragImpl={ghostCardDragImpl}/>
         </View>
     )
 }
 export default Board
+
+export type CardDragImpl = {
+    handleDragStart: (card: Card, layout: {
+        x: number;
+        y: number;
+        w: number;
+        h: number
+    }) => void;
+    handleDragMove: (dx: number, dy: number) => void;
+    handleDragEnd: () => void;
+}
+
+export type PlayerCardBoardRefs = {
+    hoveredOverBoardRef: RefObject<boolean>,
+    hoveredPlayedCardsRef: RefObject<PlayedCards | null>,
+}

@@ -24,7 +24,7 @@ const TabLayout = () => {
                 marginHorizontal: 20,
                 height: 80,
                 position: 'absolute',
-                top: 40,
+                bottom: 40,
                 paddingTop: 10,
                 backgroundColor: theme === 'dark' ? "#334155" : "#F1F5F9",
             }

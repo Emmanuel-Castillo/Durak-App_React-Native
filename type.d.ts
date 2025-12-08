@@ -1,6 +1,7 @@
 import {} from "@supabase/supabase-js"
 
 export type Card = {
+    id: string
     value: string;
     suit: "hearts" | "clubs" | "diamonds" | "spades";
     rank: number;
@@ -31,14 +32,21 @@ export type Room = {
     game: Game | null;
 }
 
+export type GameState = "Idle" | "FirstMove" | "Counter" | "EndTurn" | "Defending" | "Ended"
+
 export type Game = {
     deck: Card[];
     tsarCard: Card;
     players: Player[];
     playedCards: PlayedCards[]
+    gameState: GameState
+    turn: number;
+    winners: Player[]
+
 }
 
 export type PlayedCards = {
+    id: string
     attackingCard: Card;
     defendingCard: Card | null;
 }

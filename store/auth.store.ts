@@ -31,7 +31,7 @@ export const useAuthStore = create<AuthState>((set) => ({
             if (user) set({isAuthenticated: true, user: user as unknown as User});
             else set({isAuthenticated: false, user: null});
         } catch (e) {
-            console.error("fetchAuthenticatedUser", e);
+            // console.error("fetchAuthenticatedUser", e);
             set({isAuthenticated: false, user: null})
         } finally {
             set({isLoading: false});

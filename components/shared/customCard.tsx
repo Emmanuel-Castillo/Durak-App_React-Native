@@ -7,9 +7,8 @@ export type CardProps = {
     card?: Card;
     size?: number;
 
-    deckLength?: number;
 }
-const CustomCard = ({card, size, deckLength}: CardProps) => {
+const CustomCard = ({card, size}: CardProps) => {
     const path = card ? `${card.value}_of_${card.suit}` : `backside_card`
     const defaultWidth = 80
     const imgWidth = size ? size : defaultWidth
@@ -19,9 +18,6 @@ const CustomCard = ({card, size, deckLength}: CardProps) => {
         <View className={"relative"}>
         <Image source={allCards[path as keyof typeof allCards]}
                style={{width: imgWidth, height: imgHeight}} resizeMode={"contain"}/>
-            {deckLength && (<View className="absolute inset-0 justify-center items-center">
-                <Text className="text text-xl flex-shrink" style={{minWidth: 24}}>{deckLength}</Text>
-            </View>)}
         </View>
     )
 }

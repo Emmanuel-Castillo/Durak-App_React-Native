@@ -82,8 +82,10 @@ const OpponentHand = ({hand, rotateHand}: OpponentHandProps) => {
                 scrollEnabled={false}
                 data={hand}
                 horizontal
+                showsHorizontalScrollIndicator={false}
+                showsVerticalScrollIndicator={false}
                 contentContainerClassName={"justify-center items-center"}
-                contentContainerStyle={{transform: [{rotate: `${rotateHand}deg`}], height: height, width: width}}
+                contentContainerStyle={{transform: [{rotate: `${rotateHand}deg`}, {translateY: rotateHand === "90" ? 15: 0}], height: height, width: width}}
                 renderItem={({item: card, index}) => {
 
                     const cardAngle = angle(startAngle, endAngle, index)

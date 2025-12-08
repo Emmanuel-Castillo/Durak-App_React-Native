@@ -1,5 +1,5 @@
-import {View, Text} from 'react-native'
-import React from 'react'
+import {View, Text, Animated} from 'react-native'
+import React, {useEffect, useRef} from 'react'
 import CustomCard from "@/components/shared/customCard";
 import {PlayedCards} from "@/type";
 
@@ -8,12 +8,31 @@ export type PlayedCardPairProps = {
     hoveredOver: boolean,
 }
 const PlayedCardPair = ({pair, hoveredOver}: PlayedCardPairProps) => {
+    const scaleAnim = useRef(new Animated.Value(1)).current;
+
+    useEffect(() => {
+        if (hoveredOver) {
+            Animated.timing(scaleAnim, {
+                toValue: 1.1,
+                duration: 100,
+                useNativeDriver: true,
+
+            }).start()
+        } else {
+            Animated.timing(scaleAnim, {
+                toValue: 1,
+                duration: 100,
+                useNativeDriver: true,
+
+            }).start()
+        }
+    }, [hoveredOver]);
 
     return (
-        <View style={{
-            borderStyle: "solid",
-            borderColor: "white",
-            borderWidth: hoveredOver ? 2 : 0,
+        <Animated.View style={{
+            transform: [{
+                scale: scaleAnim
+            }]
         }}>
             <CustomCard card={pair.attackingCard} size={70}/>
             {pair.defendingCard && (
@@ -23,7 +42,7 @@ const PlayedCardPair = ({pair, hoveredOver}: PlayedCardPairProps) => {
             )
             }
 
-        </View>
+        </Animated.View>
     )
 }
 export default PlayedCardPair

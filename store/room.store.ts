@@ -3,6 +3,8 @@ import {Game, Room} from "@/type";
 import {Socket, io} from "socket.io-client"
 import {useAuthStore} from "@/store/auth.store";
 import {sortPlayersStartingWithUser} from "@/lib/sortPlayers";
+import {useGameStore} from "@/store/game.store";
+import {environment} from "expo-server";
 
 type RoomState = {
     socket: Socket | null;
@@ -22,13 +24,18 @@ export const useRoomStore = create<RoomState>((set) => ({
         const user = useAuthStore.getState().user;
         if (!user) return console.warn("No user found. Cannot connect socket.");
 
-        const socket = io("http://10.0.2.2:3000")
+        const socket = io(process.env.EXPO_PUBLIC_SERVER_URL, {
+            transports: ["websocket"]
+        });
         set({socket});
+
+
         socket.on("connect", () => {
             console.log("Connected!", socket.id);
             set({room: null})
         })
         socket.on("disconnect", () => {
+            console.log("Disconnected!", socket.id);
             set({socket: null, room: null});
         })
         socket.on("forceDisconnection", () => {
@@ -36,8 +43,11 @@ export const useRoomStore = create<RoomState>((set) => ({
             set({socket: null, room: null});
         })
         socket.on("roomData", (room: Room) => {
+            console.log("Connected to room", room.name)
             set({room: room});
         })
+
+        // socket.emit("testGame", {user})     // TESTING
         // socket.on("gameData", (game: Game) => {
         //     const room = useRoomStore.getState().room;
         //     if (!room) return console.warn("No room found. Cannot update game data.");

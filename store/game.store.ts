@@ -9,9 +9,9 @@ type GameState = {
     game: Game | null;
     startGame: () => void;
     startFakeGame: (game: Game) => void;
+    listenForGameData: () => void;
 
     player: Player | null;
-    socket: Socket | null;
 
     // Attacker Moves
     firstMove: (card: Card) => void;
@@ -23,22 +23,48 @@ type GameState = {
     resetCanCounter: () => void;
     canCounter: boolean;
     defendMove: (defCard: Card, cardPair: PlayedCards) => void;
-    counterMove: (card: Card) => void;
+    counterMove: (counterCard: Card) => void;
     yieldTurn: () => void;
+
+    playerError: string | null;
+    comments: string[]
+    showAllComments: boolean
 }
 
 export const useGameStore = create<GameState>((set) => ({
     game: null,
     player: null,
-    socket: null,
+    comments: [],
+    playerError: null,
     canCounter: false,
+    showAllComments: false,
     startGame: () => {
+        const socket = useRoomStore.getState().socket;
+        if (!socket) return;
+
+        // Rematch, use durak (last winner) to assign roles for next game
+        let durak: Player | undefined;
+        const game = useGameStore.getState().game;
+        if (game && game.gameState === "Ended") {
+            durak = game.winners.at(-1)
+        }
+        socket.emit("startGame", {durak});
+    },
+    listenForGameData: () => {
         const user = useAuthStore.getState().user;
         const socket = useRoomStore.getState().socket;
         if (!user || !socket) return;
-        socket.emit("startGame");
 
-        socket.on("gameData", (game: Game) => {
+        socket.on("disconnect", () => {
+            set({game: null, player: null, playerError: null, comments: []});
+        })
+
+        socket.on("gameData", (game: Game | null) => {
+            if (!game) {
+                set({game, player: null, playerError: null, comments: []});
+                return;
+            }
+
             // Grab user player
             const userPlayer = game.players.find(u => u.user.account_id === user.account_id)
             if (!userPlayer) return;
@@ -48,15 +74,32 @@ export const useGameStore = create<GameState>((set) => ({
             set({game: game, player: userPlayer});
         })
 
+        socket.on("newComment", (comment: string) => {
+            // console.log("New comment", comment)
+            const newComments = useGameStore.getState().comments.concat(comment);
+            set({comments: newComments});
+        })
     },
     startFakeGame: (game: Game) => {
         set({game: game, player: game.players[0]})
     },
     firstMove: card => {
+        console.log("FirstMove")
+        const socket = useRoomStore.getState().socket;
+        if (!socket) return;
+        socket.emit("firstMove", {card});
     },
     attackMove: card => {
+        console.log("AttackMove")
+        const socket = useRoomStore.getState().socket;
+        if (!socket) return;
+        socket.emit("attackMove", {card});
+        console.log("Send attackMove to server", card)
     },
     endAttackerTurn: () => {
+        const socket = useRoomStore.getState().socket;
+        if (!socket) return;
+        socket.emit("endAttackerTurn");
     },
 
     checkIfCanCounter: card => {
@@ -88,37 +131,24 @@ export const useGameStore = create<GameState>((set) => ({
     resetCanCounter: () => {
         set({canCounter: false})
     },
+
     defendMove: (defCard, cardPair) => {
-        // Base cases :
-        // - Game is null -> NOT VALID
-        // - cardPair contains defendingCard -> NOT VALID
-        // - defCard suit === tsarCard suit AND cardPair attackingCard !== tsarCard suit -> VALID
-        // - defCard suit === cardPair attackingCard suit AND defCard value > attackingCard value -> VALID
-        const game = useGameStore.getState().game;
-        if (!game) return;
-
-        if (cardPair.defendingCard) return
-        const atkCard = cardPair.attackingCard;
-
-        // Def card suit matching tsarCard suit and not the pair's atk card will pass the defence auto
-        const tsarCard = game.tsarCard
-        if (defCard.suit === tsarCard.suit && atkCard.suit !== tsarCard.suit) {
-            // DEFENCE VALID
-            console.log("DEFENCE VALID")
-        }
-
-        //
-        if (defCard.suit === atkCard.suit && defCard.value > atkCard.value) {
-            // DEFENCE VALID
-            console.log("DEFENCE VALID")
-        }
-    },
-    counterMove: card => {
-        const socket = useGameStore.getState().socket;
+        const socket = useRoomStore.getState().socket;
         if (!socket) return;
-
-        socket.emit("counterMove", card)
+        console.log("Emitting defendMove...")
+        socket.emit("defendMove", {defCard, cardPair});
+    },
+    counterMove: counterCard => {
+        const socket = useRoomStore.getState().socket;
+        if (!socket) return;
+        console.log("Emitting counterMove...")
+        socket.emit("counterMove", {counterCard})
     },
     yieldTurn: () => {
+        const socket = useRoomStore.getState().socket;
+        if (!socket) return;
+
+        console.log("Emitting yieldTurn");
+        socket.emit("yieldTurn");
     },
 }))

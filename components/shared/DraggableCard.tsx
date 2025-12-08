@@ -20,6 +20,7 @@ type DraggableCardProps = {
     onDragStart: (card: Card, layout: LayoutInfo) => void;
     onDragMove: (dx: number, dy: number) => void;
     onDragEnd: () => void;
+    isBeingDragged: boolean;
 };
 
 const DraggableCard = ({
@@ -27,6 +28,7 @@ const DraggableCard = ({
                            onDragStart,
                            onDragMove,
                            onDragEnd,
+    isBeingDragged,
                        }: DraggableCardProps) => {
 
     // Store the layout of the card inside the FlatList (absolute position)
@@ -40,8 +42,6 @@ const DraggableCard = ({
     const cardRef = useRef<View>(null)
 
     const pan = useRef(new Animated.ValueXY()).current;
-
-    const [dragged, setDragged] = useState(false);
 
     const panResponder = useRef(
         PanResponder.create({
@@ -57,7 +57,6 @@ const DraggableCard = ({
 
                 pan.setOffset({ x: 0, y: 0 });
                 pan.setValue({ x: 0, y: 0 });
-                setDragged(true);
             },
 
             onPanResponderMove: (e, gestureState) => {
@@ -70,13 +69,12 @@ const DraggableCard = ({
                 onDragEnd();
                 pan.flattenOffset();
                 pan.setValue({x: 0, y: 0});
-                setDragged(false);
             },
         })
     ).current;
 
     return (
-        <View ref={cardRef}  style={{opacity: dragged ? 0.6 : 1}}>
+        <View ref={cardRef}  style={{opacity: isBeingDragged ? 0.6 : 1}}>
             {/* This is the real in-hand card (NOT the ghost) */}
                 <Animated.View {...panResponder.panHandlers}>
                     <CustomCard card={cardProps.card}/>
