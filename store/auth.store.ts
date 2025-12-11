@@ -1,11 +1,12 @@
 import {create} from 'zustand'
 import {User} from "@/type";
-import {getCurrentUser} from "@/utils/supabase";
+import {getCurrentUser, getCurrentUserFriendIds} from "@/utils/supabase";
 import {Socket} from "socket.io-client";
 
 type AuthState = {
     isAuthenticated: boolean;
     user: User | null;
+    friendIds: number[];
     isLoading: boolean;
 
     setIsAuthenticated: (value: boolean) => void;
@@ -18,6 +19,7 @@ type AuthState = {
 export const useAuthStore = create<AuthState>((set) => ({
     isAuthenticated: false,
     user: null,
+    friendIds: [],
     isLoading: true,
 
     setIsAuthenticated: (value) => set({isAuthenticated: value}),
@@ -27,9 +29,10 @@ export const useAuthStore = create<AuthState>((set) => ({
     fetchAuthenticatedUser: async () => {
         set({isLoading: true});
         try {
-            const user = await getCurrentUser();
-            if (user) set({isAuthenticated: true, user: user as unknown as User});
-            else set({isAuthenticated: false, user: null});
+            const user: User = await getCurrentUser();
+            const friendIds: number[] = await getCurrentUserFriendIds(user.id)
+
+            set({isAuthenticated: true, user, friendIds});
         } catch (e) {
             // console.error("fetchAuthenticatedUser", e);
             set({isAuthenticated: false, user: null})

@@ -1,12 +1,12 @@
-import {View, Text, TextInput, Image, FlatList} from 'react-native'
+import {View, Text, TextInput, Image, FlatList, TouchableOpacity} from 'react-native'
 import React, {useEffect} from 'react'
 import {SafeAreaView} from "react-native-safe-area-context";
-import CustomTextInput from "@/components/shared/CustomTextInput";
 import {Link} from "expo-router";
 import {User} from "@/type";
-import Avatar from "@/components/shared/avatar";
-import {getAllUsers} from "@/utils/supabase";
-import UserRow from "@/components/shared/UserRow";
+import {getAllUsers, getUser} from "@/utils/supabase";
+import SearchableUserList from "@/components/friends/SearchableUserList";
+import FriendsList from "@/components/friends/FriendsList";
+import AddFriendList from "@/components/friends/AddFriendList";
 
 const EmptyListComponent = () => {
     return (<View className={"flex-1 p-4 items-center justify-center"}>
@@ -16,48 +16,42 @@ const EmptyListComponent = () => {
         <Link href={"/room"} className={"text text-lg text-center text-blue-500 mt-4"}>Manage friends</Link>
     </View>)
 }
-const friends: User[] = [{
-    id: 0,
-    created_at: new Date(),
-    username: 'Kristina',
-    email: 'km@gmail.com',
-    num_wins: 0,
-    account_id: 'dfajsdkfjaskdfjldjfkl'
-}, {
-    id: 1,
-    created_at: new Date(),
-    username: 'Kristina',
-    email: 'km@gmail.com',
-    num_wins: 0,
-    account_id: 'dfajsdkfasdjaskdfjldjfkl'
-}]
-const Friends = () => {
-    const [searchedUserId, setSearchedUserId] = React.useState<string>("");
-    const [searchedUsers, setSearchedUsers] = React.useState<User[]>(friends);
 
-    useEffect(() => {
-        const x = async() => {
-            const data = await getAllUsers();
-            setSearchedUsers(data);
+const Friends = () => {
+    const [toggleView, setToggleView] = React.useState<"Friends" | "Add Friend" | "Sent Requests" | "Approve Requests">("Friends");
+
+    const renderView = () => {
+        switch (toggleView) {
+            case "Friends":
+                return <FriendsList/>
+            case "Add Friend":
+                return <AddFriendList/>
+            case "Sent Requests":
+                return <Text>Sent</Text>
+            case "Approve Requests":
+                return <Text>Approve Requests</Text>
         }
-        x()
-    }, [])
+    }
 
     return (
-        <SafeAreaView className={"themed-view"}>
-            <FlatList data={searchedUsers}
-                      keyExtractor={(item) => item.id.toString()}
-                      ListHeaderComponent={
-                          <View className={"themed-border p-2 rounded-md gap-2 mb-4"}>
-                              <Text className={"text text-2xl"}>Search User</Text>
-                              <CustomTextInput onChangeText={e => setSearchedUserId(e)} placeholder={"Enter Account Id"}
-                                               value={searchedUserId}/>
-                          </View>}
-                      contentContainerClassName={"gap-2"}
-                      renderItem={({item}) =>
-                          (<UserRow user={item}/>)
-                      } ListEmptyComponent={EmptyListComponent}/>
+        <SafeAreaView className={"themed-view gap-4"}>
+            <View className={"items-center justify-center p-4"}
+                  style={{borderBottomWidth: 2, borderBottomColor: "black"}}>
+                <Text className={"text text-2xl font-bold"}>Friends List</Text>
+            </View>
 
+            <View className={"flex-row justify-around"}>
+                <TouchableOpacity onPress={() => setToggleView("Friends")}><Text>Friends</Text></TouchableOpacity>
+                <TouchableOpacity onPress={() => setToggleView("Add Friend")}><Text>Add Friend</Text></TouchableOpacity>
+                <TouchableOpacity onPress={() => setToggleView("Sent Requests")}><Text>Sent
+                    Requests</Text></TouchableOpacity>
+                <TouchableOpacity onPress={() => setToggleView("Approve Requests")}><Text>Approve
+                    Requests</Text></TouchableOpacity>
+
+
+            </View>
+
+            {renderView()}
         </SafeAreaView>
     )
 }

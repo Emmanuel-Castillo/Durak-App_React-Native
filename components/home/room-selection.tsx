@@ -33,8 +33,8 @@ const RoomSelection = () => {
                 <View className={'bg-green-500 rounded-lg p-4'}>
                     <Text className={"text text-2xl"}>Create Room</Text>
                     <CustomTextInput value={roomName} placeholder={"Room Name"} onChangeText={e => setRoomName(e)} maxLength={15}/>
-                    <View className={"flex-row items-center"}>
-                        <Text className={"text"}>Friends Only?</Text>
+                    <View className={"flex-row gap-2 items-center"}>
+                        <Text className={"flex-1 text"}>Friends Only?</Text>
                         <Switch value={friendsOnly} onChange={() => setFriendsOnly(!friendsOnly)}/>
                     </View>
                     <Button title={"Create"} onPress={handleCreateRoom}/>
@@ -45,8 +45,8 @@ const RoomSelection = () => {
                 <View className={"bg-blue-500 rounded-lg p-4"}>
                     <Text className={"text text-2xl"}>Join Room</Text>
                     <CustomTextInput value={roomId} placeholder={"Enter Room Id"} onChangeText={e => setRoomId(e)} maxLength={15}/>
-                    <View className={"flex-row items-center"}>
-                        <Text className={"text"}>Join Random?</Text>
+                    <View className={"flex-row gap-2 items-center"}>
+                        <Text className={"flex-1 text"}>Join Random?</Text>
                         <Switch value={allowJoiningRandomRoom}
                                 onChange={() => setAllowJoiningRandomRoom(!allowJoiningRandomRoom)}/>
                     </View>

@@ -11,7 +11,7 @@ const Profile = () => {
     const formattedDate = user ? new Date(user?.created_at).toLocaleDateString("en-US") : new Date().toLocaleDateString("en-US");
     return user && (
         <SafeAreaView className={"themed-view justify-center items-center"}>
-            <View className={"border border-black dark:border-white rounded-lg p-10 w-3/4 h-[400px]"}>
+            <View className={"bg-white border border-black dark:border-white rounded-lg p-10 w-3/4 h-[400px]"}>
                 <View className={"absolute top-4 left-4 justify-center items-center"}>
                     <Text className={"text text-4xl "}>{user.username[0]}</Text>
                     <MaterialCommunityIcons name="cards-spade" size={35}
@@ -25,7 +25,7 @@ const Profile = () => {
                 <View className={"flex-1 gap-2 justify-center items-center"}>
                     <Avatar userAvatar={user.avatar} size={100}/>
                     <Text className={"text text-3xl"}>{user.username}</Text>
-                    <Text className={"text text-sm"}>ID: {user.account_id}</Text>
+                    <Text className={"text text-sm"}>ID: {user.profile_id}</Text>
                     <View className={"w-full border border-black dark:border-white"}/>
                     <View className={"w-full"}>
                         <Text className={"text text-md"}>Total wins: {user.num_wins}</Text>

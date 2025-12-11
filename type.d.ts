@@ -15,6 +15,7 @@ export type User = {
     avatar?: string;
     num_wins: number;
     account_id: string;
+    profile_id: string;
 }
 
 export type Player = {

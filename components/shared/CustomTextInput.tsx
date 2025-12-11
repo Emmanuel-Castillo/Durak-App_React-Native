@@ -8,33 +8,35 @@ export type CustomTextInputProps = TextInputProps & {
     value: string;
     onChangeText: (text: string) => void;
     placeholder: string;
+    maxLength?: number;
     textInputStyle?: string;
-    isForPassword?: boolean
+    secureText?: boolean;
+    editable?: boolean;
+    icon?: React.ReactNode;
 }
 const CustomTextInput = ({
                              value,
                              onChangeText,
                              placeholder,
+                             maxLength,
                              textInputStyle,
                              textContentType,
-                             isForPassword
+                             secureText,
+                             editable,
+                             icon
                          }: CustomTextInputProps) => {
     const theme = colorScheme.get()
-    const [showPassword, setShowPassword] = React.useState(false);
-    return isForPassword ? (
-        <View
-            className={"border dark:border-white rounded-lg p-2 w-full flex-row justify-between items-center"}>
-            <TextInput placeholder={"Password"} secureTextEntry={!showPassword}
-                       value={value} onChangeText={onChangeText} className={"dark:text-white"}
-                       placeholderTextColor={theme === "dark" ? "white" : "black"}/>
-            <Ionicons name={!showPassword ? "eye" : "eye-off"} size={24} color={theme === "dark" ? "white" : "black"}
-                      onPress={() => setShowPassword(!showPassword)}/>
-        </View>
-    ) : (
-        <TextInput placeholder={placeholder} className={cn("text-input", textInputStyle)} value={value}
-                   onChangeText={onChangeText}
-                   placeholderTextColor={theme === "dark" ? "white" : "black"}
-                   textContentType={textContentType}/>
-    )
+    // const [showPassword, setShowPassword] = React.useState(false);
+    return <View className={cn("text-input_container", textInputStyle)}>
+        <TextInput placeholder={placeholder} maxLength={maxLength} secureTextEntry={secureText}
+                   value={value} onChangeText={onChangeText} className={"text-input"}
+                   textContentType={textContentType}
+                   editable={editable}
+                   placeholderTextColor={theme === "dark" ? "white" : "black"}/>
+        {icon}
+        {/*{isForPassword &&*/}
+        {/*    <Ionicons name={!showPassword ? "eye" : "eye-off"} size={24} color={theme === "dark" ? "white" : "black"}*/}
+        {/*              onPress={() => setShowPassword(!showPassword)}/>}*/}
+    </View>
 }
 export default CustomTextInput
