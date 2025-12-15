@@ -7,6 +7,13 @@ export type Card = {
     rank: number;
 }
 
+export type FriendRequest = {
+    id: number;
+    created_at: Date;
+    sender_id: number;
+    receiver_id: number;
+}
+
 export type User = {
     id: number;
     created_at: Date;

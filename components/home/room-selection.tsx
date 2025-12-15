@@ -11,11 +11,11 @@ const RoomSelection = () => {
     const [roomId, setRoomId] = React.useState("");
     const [friendsOnly, setFriendsOnly] = React.useState(false);
     const [allowJoiningRandomRoom, setAllowJoiningRandomRoom] = React.useState(false);
-    const {socket, room, joinRoom, createRoom, connectSocket } = useRoomStore()
+    const {socket, room, joinRoom, createRoom, subscribeToRoomEvents } = useRoomStore()
     const { listenForGameData } = useGameStore()
 
     useEffect(() => {
-        connectSocket()
+        subscribeToRoomEvents()
         // listenForGameData()
     }, []);
 

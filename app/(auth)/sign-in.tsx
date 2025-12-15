@@ -1,7 +1,5 @@
-import {View, Text, TextInput, KeyboardAvoidingView, TouchableOpacity, Alert} from 'react-native'
+import {View, Text, KeyboardAvoidingView, TouchableOpacity, Alert, useColorScheme} from 'react-native'
 import React, {useState} from 'react'
-import {colorScheme} from "nativewind";
-import {Link} from "expo-router";
 import CustomTextInput from "@/components/shared/CustomTextInput";
 import {signIn, signUp} from "@/utils/supabase";
 import {useAuthStore} from "@/store/auth.store";
@@ -28,7 +26,7 @@ const SignIn = () => {
         }
 
     }
-    const toggleAuthType = () => {
+    const toggleAuthTypeComponent = () => {
         if (authType === "Sign In") {
             return <Text className={"flex-1 text text-center"}>
                 Don&#39;t have an account?{" "}
@@ -42,35 +40,32 @@ const SignIn = () => {
     }
 
     return (
-        <KeyboardAvoidingView className={"flex-col gap-6 p-6 rounded-lg border bg-gray-100  dark:bg-gray-700"}>
+        <KeyboardAvoidingView className={"gap-6 p-6 rounded-lg border bg-gray-300 dark:bg-gray-700"}>
             <Text className={"text text-center text-3xl"}>{authType}</Text>
             <View className={"gap-4"}>
                 {authType === "Sign Up" && <CustomTextInput onChangeText={(text) => setForm({...form, username: text})}
                                                             placeholder={"Username"}
-                                                            textInputStyle={"p-4"}
                                                             maxLength={15}
                                                             textContentType={"username"}
                                                             value={form.username}/>}
                 <CustomTextInput onChangeText={(text) => setForm({...form, email: text})} placeholder={"Email"}
                                  maxLength={30}
-                                 textInputStyle={"p-4"}
                                  textContentType={"emailAddress"}
                                  value={form.email}/>
                 <CustomTextInput onChangeText={(text) => setForm({...form, password: text})} placeholder={"Password"}
                                  maxLength={15}
-                                 textInputStyle={"p-4"}
                                  textContentType={"password"}
                                  value={form.password} secureText={!showFormPassword} icon={
                     <Ionicons name={!showFormPassword ? "eye" : "eye-off"} size={24}
-                              color={colorScheme.get() === "dark" ? "white" : "black"}
+                              color={useColorScheme() === "dark" ? "white" : "black"}
                               onPress={() => setShowFormPassword(!showFormPassword)}/>
 
                 }/>
             </View>
-            <TouchableOpacity onPress={onPressAuthButton} className={"bg-blue-500 py-2 rounded-lg "}><Text
-                className={"text text-xl text-center"}>{authType}</Text></TouchableOpacity>
+            <TouchableOpacity onPress={onPressAuthButton} className={"bg-blue-500 py-2 rounded-lg"}>
+                <Text className={"text text-xl text-center"}>{authType}</Text></TouchableOpacity>
             <View className={"flex flex-row"}>
-                {toggleAuthType()}
+                {toggleAuthTypeComponent()}
             </View>
         </KeyboardAvoidingView>
     )

@@ -1,4 +1,4 @@
-import {Button, Switch, Text, View} from "react-native";
+import {Button, Text, View} from "react-native";
 import CustomTextInput from "@/components/shared/CustomTextInput";
 import React from "react";
 import cn from "clsx";
@@ -16,15 +16,14 @@ type RoomSetterConfig = {
 const RoomSetter = ({setterType}: RoomSetterProps) => {
     const {joinRoom, createRoom} = useRoomStore()
     const [inputValue, setInputValue] = React.useState("");
-    const [switchValue, setSwitchValue] = React.useState(false);
     const setterConfig: RoomSetterConfig = setterType === "Create" ? {
-            viewBackgroundColor: "bg-green-500",
+            viewBackgroundColor: "bg-green-600",
             inputPlaceholder: "Enter room name",
             switchLabel: "Friends Only?",
             onPressButton: createRoom
         } :
         {
-            viewBackgroundColor: "bg-blue-500",
+            viewBackgroundColor: "bg-blue-600",
             inputPlaceholder: "Enter room id",
             switchLabel: "Join Random?",
             onPressButton: joinRoom
@@ -36,10 +35,6 @@ const RoomSetter = ({setterType}: RoomSetterProps) => {
                          textInputStyle={"p-2"}
                          placeholder={setterConfig.inputPlaceholder}
                          onChangeText={e => setInputValue(e)} maxLength={15}/>
-        {/*<View className={"flex-row gap-2 items-center"}>*/}
-        {/*    <Text className={"flex-1 text"}>{setterConfig.switchLabel}</Text>*/}
-        {/*    <Switch value={switchValue} onChange={() => setSwitchValue(!switchValue)}/>*/}
-        {/*</View>*/}
         <Button title={setterType} onPress={() => setterConfig.onPressButton(inputValue)}/>
     </View>
 }

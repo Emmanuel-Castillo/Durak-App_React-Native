@@ -226,7 +226,7 @@ const Board = ({comments}: { game?: Game, comments: string[] }) => {
                 </View>
             </View>
 
-            {/* Bottom Row (User) */}
+            {/* Bottom Row (UserId) */}
             <UserPlayerRow playerCardBoardRefs={playerCardBoardRefs} cardDragImpl={ghostCardDragImpl}/>
         </View>
     )

@@ -2,7 +2,9 @@ import 'expo-sqlite/localStorage/install';
 import {createClient} from '@supabase/supabase-js';
 import {generateRandomId} from "@/lib/randomIdGenerator";
 import {random} from "nanoid";
-import {User} from "@/type";
+import {FriendRequest, User} from "@/type";
+import {useAuthStore} from "@/store/auth.store";
+import {Alert} from "react-native";
 
 
 // @ts-ignore
@@ -39,7 +41,6 @@ export const signUp = async (username: string, email: string, password: string,)
         throw new Error(e as string)
     }
 }
-
 export const signIn = async (email: string, password: string) => {
     try {
         const {error} = await supabase.auth.signInWithPassword({email: email, password: password});
@@ -48,7 +49,6 @@ export const signIn = async (email: string, password: string) => {
         throw new Error(e as string)
     }
 }
-
 export const logOut = async () => {
     try {
         const {error} = await supabase.auth.signOut();
@@ -58,7 +58,7 @@ export const logOut = async () => {
     }
 }
 
-export const getCurrentUser = async () => {
+export const getSessionUserProfile = async () => {
     try {
         const {data: {user}, error: getUserError} = await supabase.auth.getUser()
         if (getUserError) throw getUserError;
@@ -76,7 +76,7 @@ export const getCurrentUser = async () => {
         throw new Error(e as string)
     }
 }
-export const getCurrentUserFriendIds = async (userId: number) => {
+export const getFriendProfileIds = async (userId: number) => {
     try {
         // STEP 1: get relations
         const {data: relations, error: relError} = await supabase
@@ -95,14 +95,12 @@ export const getCurrentUserFriendIds = async (userId: number) => {
         );
 
         return friendIds
-
-
     } catch (e) {
         console.log(e)
         throw new Error(e as string)
     }
 }
-export const getCurrentUserFriendProfiles = async (friendIds: number[]) => {
+export const getFriendProfiles = async (friendIds: number[]) => {
     try {
         if (friendIds.length === 0) return []
         const {data: friends, error: friendsError} = await supabase
@@ -118,23 +116,11 @@ export const getCurrentUserFriendProfiles = async (friendIds: number[]) => {
         throw new Error(e as string)
     }
 }
-export const getUser = async (profileId: string) => {
+export const getProfile = async (profileId: string) => {
     try {
         const {data, error} = await supabase.from('profiles').select('*').eq('profile_id', profileId).single();
         if (error) throw error
         return data
-    } catch (e) {
-        console.log(e)
-        throw new Error(e as string)
-    }
-}
-
-export const getAllUsers = async () => {
-    try {
-        const {error: getAllUsersError, data: users} = await supabase.from('profiles').select('*').select('*')
-        if (getAllUsersError) throw getAllUsersError;
-
-        return users;
     } catch (e) {
         console.log(e)
         throw new Error(e as string)
@@ -146,11 +132,54 @@ export const sendFriendRequest = async (sender: User, receiver: User) => {
         const {data, error} = await supabase.from('friend_requests').insert({
             sender_id: sender.id,
             receiver_id: receiver.id,
-        })
+        }).select()
         if (error) throw error
-        console.log(data)
+        return data
     } catch (e) {
         console.log(e)
         throw new Error(e as string)
+    }
+}
+export const approveFriendRequest = async (request: FriendRequest) => {
+    try {
+        // Create new 'friends' row
+        const {data: insertFriendData, error: insertFriendError} = await supabase.from('friends').insert({
+            user_id_1: request.sender_id,
+            user_id_2: request.receiver_id,
+        })
+        if (insertFriendError) throw insertFriendError
+
+        // Delete 'friend_requests' row
+        await deleteFriendRequest(request)
+    } catch (e) {
+        console.log(e)
+        throw new Error(e as string)
+    }
+}
+export const deleteFriendRequest = async (request: FriendRequest) => {
+    try {
+        const {
+            data: deleteRequestData,
+            error: deleteRequestError
+        } = await supabase.from('friend_requests').delete().eq('id', request.id)
+        if (deleteRequestError) throw deleteRequestError
+    } catch (e: any) {
+        console.log(e)
+        throw new Error(e as string)
+    }
+}
+export const removeFriendship = async (user1: User, user2: User) => {
+    try {
+        const {error} = await supabase
+            .from('friends')
+            .delete()
+            .or(
+                `and(user_id_1.eq.${user1.id},user_id_2.eq.${user2.id}),
+       and(user_id_1.eq.${user2.id},user_id_2.eq.${user1.id})`
+            )
+
+        if (error) throw error
+    } catch (e: any) {
+        Alert.alert(e.toString())
     }
 }

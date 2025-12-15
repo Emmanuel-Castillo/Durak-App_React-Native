@@ -39,7 +39,7 @@ export const useGameStore = create<GameState>((set) => ({
     canCounter: false,
     showAllComments: false,
     startGame: () => {
-        const socket = useRoomStore.getState().socket;
+        const socket = useAuthStore.getState().socket;
         if (!socket) return;
 
         // Rematch, use durak (last winner) to assign roles for next game
@@ -52,7 +52,7 @@ export const useGameStore = create<GameState>((set) => ({
     },
     listenForGameData: () => {
         const user = useAuthStore.getState().user;
-        const socket = useRoomStore.getState().socket;
+        const socket = useAuthStore.getState().socket;
         if (!user || !socket) return;
 
         socket.on("disconnect", () => {
@@ -85,19 +85,19 @@ export const useGameStore = create<GameState>((set) => ({
     },
     firstMove: card => {
         console.log("FirstMove")
-        const socket = useRoomStore.getState().socket;
+        const socket = useAuthStore.getState().socket;
         if (!socket) return;
         socket.emit("firstMove", {card});
     },
     attackMove: card => {
         console.log("AttackMove")
-        const socket = useRoomStore.getState().socket;
+        const socket = useAuthStore.getState().socket;
         if (!socket) return;
         socket.emit("attackMove", {card});
         console.log("Send attackMove to server", card)
     },
     endAttackerTurn: () => {
-        const socket = useRoomStore.getState().socket;
+        const socket = useAuthStore.getState().socket;
         if (!socket) return;
         socket.emit("endAttackerTurn");
     },
@@ -133,19 +133,19 @@ export const useGameStore = create<GameState>((set) => ({
     },
 
     defendMove: (defCard, cardPair) => {
-        const socket = useRoomStore.getState().socket;
+        const socket = useAuthStore.getState().socket;
         if (!socket) return;
         console.log("Emitting defendMove...")
         socket.emit("defendMove", {defCard, cardPair});
     },
     counterMove: counterCard => {
-        const socket = useRoomStore.getState().socket;
+        const socket = useAuthStore.getState().socket;
         if (!socket) return;
         console.log("Emitting counterMove...")
         socket.emit("counterMove", {counterCard})
     },
     yieldTurn: () => {
-        const socket = useRoomStore.getState().socket;
+        const socket = useAuthStore.getState().socket;
         if (!socket) return;
 
         console.log("Emitting yieldTurn");

@@ -3,23 +3,23 @@
 @tailwind utilities;
 
 .text {
-    @apply dark:text-white
+    @apply text-white
 }
 
 .text-input_container {
-    @apply px-2 rounded-lg flex-row justify-between items-center bg-gray-200 dark:bg-gray-800
+    @apply px-2 py-4 rounded-lg flex-row justify-between items-center bg-slate-900
 }
 .text-input_container:focus {
-    @apply border dark:border-white
+    @apply border border-white
 }
 .text-input {
-    @apply dark:text-white flex-1
+    @apply text-white flex-1
 }
 
 .themed-view {
-    @apply flex-1 bg-gray-400 dark:bg-gray-800 p-4
+    @apply flex-1 bg-gray-800 p-4
 }
 
 .themed-border {
-    @apply border dark:border-white
+    @apply border border-white
 }

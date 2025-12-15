@@ -8,11 +8,10 @@ import {environment} from "expo-server";
 import {Alert} from "react-native";
 
 type RoomState = {
-    socket: Socket | null;
     room: Room | null;
     roomLoading: boolean;
 
-    connectSocket: () => void;
+    subscribeToRoomEvents: () => void;
     createRoom: (roomName: string) => void;
     joinRoom: (roomId: string) => void;
     leaveRoom: () => void;
@@ -20,30 +19,25 @@ type RoomState = {
 }
 
 export const useRoomStore = create<RoomState>((set) => ({
-    socket: null,
     room: null,
     roomLoading: false,
-    connectSocket: () => {
+    subscribeToRoomEvents: () => {
         try {
             const user = useAuthStore.getState().user;
-            if (!user) throw new Error("No user found. Cannot connect socket.");
+            if (!user) throw new Error("No user found.");
 
-            const socket = io(process.env.EXPO_PUBLIC_SERVER_URL, {
-                transports: ["websocket"]
-            });
-            set({socket});
+            const socket = useAuthStore.getState().socket;
+            if (!socket) throw new Error("No socket found.");
 
             socket.on("connect", () => {
-                console.log("Connected!", socket.id);
                 set({room: null})
             })
             socket.on("disconnect", () => {
-                console.log("Disconnected!", socket.id);
-                set({socket: null, room: null});
+                set({room: null});
             })
             socket.on("forceDisconnection", () => {
                 socket.disconnect()
-                set({socket: null, room: null});
+                set({room: null});
             })
             socket.on("roomData", (room: Room) => {
                 console.log("Connected to room", room.name)
@@ -52,6 +46,7 @@ export const useRoomStore = create<RoomState>((set) => ({
             socket.on("roomError", (error: any) => {
                 Alert.alert(error.toString())
             })
+
         } catch (e: any) {
             Alert.alert(e.toString());
         }
@@ -60,7 +55,7 @@ export const useRoomStore = create<RoomState>((set) => ({
         //     const room = useRoomStore.getState().room;
         //     if (!room) return console.warn("No room found. Cannot update game data.");
         //
-        //     // Sort players starting with own User
+        //     // Sort players starting with own UserId
         //     game.players = sortPlayersStartingWithUser(user.account_id, game.players)
         //     set({room: {...room, game: game}});
         // })
@@ -68,7 +63,7 @@ export const useRoomStore = create<RoomState>((set) => ({
     createRoom: (roomName) => {
         set({roomLoading: true})
         try {
-            const socket = useRoomStore.getState().socket;
+            const socket = useAuthStore.getState().socket;
             const user = useAuthStore.getState().user;
             if (!socket || !user) throw new Error("Socket or user undefined.");
             if (roomName.length === 0) throw new Error("Room name is empty.");
@@ -83,7 +78,7 @@ export const useRoomStore = create<RoomState>((set) => ({
     joinRoom: (roomId) => {
         set({roomLoading: true})
         try {
-            const socket = useRoomStore.getState().socket;
+            const socket = useAuthStore.getState().socket;
             const user = useAuthStore.getState().user;
             if (!socket || !user) throw new Error("Socket or user undefined.");
             if (roomId.length === 0) throw new Error("Room id is empty.");
@@ -96,23 +91,23 @@ export const useRoomStore = create<RoomState>((set) => ({
     },
     leaveRoom: () => {
         try {
-            const socket = useRoomStore.getState().socket;
+            const socket = useAuthStore.getState().socket;
             if (!socket) throw new Error("Socket undefined.");
             socket.disconnect();
         } catch (e: any) {
             Alert.alert(e.toString());
         } finally {
-            set({socket: null, room: null});
+            set({room: null});
         }
     },
     removeFromRoom: (userId: string) => {
         try {
-            const socket = useRoomStore.getState().socket;
-            const room = useRoomStore.getState().room;
+            const socket = useAuthStore.getState().socket;
             const user = useAuthStore.getState().user;
-            if (!user || !socket || !room) throw new Error("User, socket, or room undefined.");
-            if (userId.length === 0) throw new Error("User id is empty.");
-            if (room.hostId !== user.account_id) throw new Error("User is not authorized to cannot remove users from room.");
+            const room = useRoomStore.getState().room;
+            if (!user || !socket || !room) throw new Error("UserId, socket, or room undefined.");
+            if (userId.length === 0) throw new Error("UserId id is empty.");
+            if (room.hostId !== user.account_id) throw new Error("UserId is not authorized to cannot remove users from room.");
 
             socket.emit("removeFromRoom", {userId})
         } catch (e: any) {

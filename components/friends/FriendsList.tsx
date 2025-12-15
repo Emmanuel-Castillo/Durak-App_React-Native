@@ -1,16 +1,21 @@
 import SearchableUserList from "@/components/friends/SearchableUserList";
 import React, {useEffect, useState} from "react";
 import {User} from "@/type";
-import {getCurrentUserFriendProfiles} from "@/utils/supabase";
+import {getFriendProfiles} from "@/utils/supabase";
 import {useAuthStore} from "@/store/auth.store";
+import {Alert} from "react-native";
 
 const FriendsList = () => {
     const {friendIds} = useAuthStore()
     const [friends, setFriends] = useState<User[]>([])
 
     useEffect(() => {
-        const fetchFriendProfiles = async() => {
-            setFriends(await getCurrentUserFriendProfiles(friendIds))
+        const fetchFriendProfiles = async () => {
+            try {
+                setFriends(await getFriendProfiles(friendIds))
+            } catch (e: any) {
+                Alert.alert(e.toString())
+            }
         }
         fetchFriendProfiles()
     }, []);

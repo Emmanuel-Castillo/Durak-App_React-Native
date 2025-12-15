@@ -3,18 +3,12 @@ import React from 'react'
 import Avatar from "@/components/shared/avatar";
 import {User} from "@/type";
 
-export type UserRowActionButtons = {
-    icon: React.JSX.Element;
-    iconColor?: string;
-    onPressIcon: any;
-}
 type UserRowProps = {
     user: User;
-    actionButtons?: UserRowActionButtons[];
 }
-const UserRow = ({user, actionButtons}: UserRowProps) => {
+const UserRow = ({user}: UserRowProps) => {
     return (
-        <View className={"p-4 rounded-lg flex-row items-center gap-2 bg-gray-100"}>
+        <View className={"p-4 rounded-lg flex-row items-center gap-2 bg-zinc-900"}>
             <View className={"flex-1 flex-row gap-2"}>
                 <Avatar size={40}/>
                 <View>
@@ -22,17 +16,6 @@ const UserRow = ({user, actionButtons}: UserRowProps) => {
                     <Text className={"text text-sm"}>Level 1</Text>
                 </View>
             </View>
-            <View>
-                <FlatList
-                    horizontal={true}
-                    contentContainerClassName={"gap-2"}
-                    data={actionButtons}
-                    renderItem={({item}) =>
-                        <TouchableOpacity className={"p-2 rounded themed-border"} style={{backgroundColor: item.iconColor}}
-                                          onPress={item.onPressIcon}>
-                            {item.icon}
-                        </TouchableOpacity>
-                    }/></View>
         </View>
     )
 }

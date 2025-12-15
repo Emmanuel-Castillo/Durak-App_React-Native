@@ -7,7 +7,7 @@ type AvatarProps = {
 }
 const Avatar = ({userAvatar, size}: AvatarProps) => {
     return (
-        <View className={"border border-black dark:border-white justify-center items-center rounded-full bg-black"}>
+        <View className={"border border-white justify-center items-center rounded-full bg-black"}>
             <Image source={userAvatar ? {uri: userAvatar} : require('../../assets/images/react-logo.png')} style={{height: size, width: size}} resizeMode={"contain"}/>
         </View>
     )
