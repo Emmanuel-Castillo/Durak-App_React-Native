@@ -183,3 +183,12 @@ export const removeFriendship = async (user1: User, user2: User) => {
         Alert.alert(e.toString())
     }
 }
+
+export const updatePushToken = async (user: User, token: string) => {
+    try {
+        await supabase.from('user_push_tokens').upsert({user_id: user.id, expo_push_token: token})
+    } catch (e: any) {
+        console.log(e)
+        Alert.alert(e.toString())
+    }
+}

@@ -28,6 +28,7 @@
       "bundler": "metro"
     },
     "plugins": [
+      "expo-notifications",
       "expo-router",
       [
         "expo-splash-screen",
