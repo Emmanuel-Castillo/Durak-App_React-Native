@@ -1,4 +1,4 @@
-import SearchableUserList from "@/components/friends/SearchableUserList";
+import SearchableUserList from "@/components/shared/SearchableUserList";
 import React, {useEffect, useState} from "react";
 import {User} from "@/type";
 import {getFriendProfiles} from "@/utils/supabase";

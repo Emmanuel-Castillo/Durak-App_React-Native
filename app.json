@@ -20,7 +20,8 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.mannydev2025.durakapp"
+      "package": "com.mannydev2025.durakapp",
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
       "output": "static",

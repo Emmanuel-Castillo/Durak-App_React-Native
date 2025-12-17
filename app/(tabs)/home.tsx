@@ -2,7 +2,7 @@ import React, {useEffect, useState} from 'react'
 import {SafeAreaView} from "react-native-safe-area-context";
 import {useRoomStore} from "@/store/room.store";
 import {Redirect} from "expo-router";
-import RoomSetter from "@/components/RoomSetter";
+import RoomSetter from "@/components/home/RoomSetter";
 import {useAuthStore} from "@/store/auth.store";
 
 const Home = () => {

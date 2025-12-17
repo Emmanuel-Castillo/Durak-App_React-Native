@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "501261497004",
+    "project_id": "durak-app-58b2c",
+    "storage_bucket": "durak-app-58b2c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:501261497004:android:410ce4e1b2f949159ea509",
+        "android_client_info": {
+          "package_name": "com.mannydev2025.durakapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyANRk3wZJgBqxHV6ME3UGtLT9nd7rTRjS0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

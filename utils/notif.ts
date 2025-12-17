@@ -38,6 +38,7 @@ export async function registerForPushNotificationsAsync() {
         console.log(pushTokenString);
         return pushTokenString;
     } catch (e: any) {
+        console.error(e);
         Alert.alert(e.toString());
     }
 }

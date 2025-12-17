@@ -1,6 +1,6 @@
 import {User} from "@/type";
 import React from "react";
-import SearchableUserList from "@/components/friends/SearchableUserList";
+import SearchableUserList from "@/components/shared/SearchableUserList";
 import {getProfile} from "@/utils/supabase";
 
 const AddFriendList = () => {
@@ -9,7 +9,6 @@ const AddFriendList = () => {
             const user: User = await getProfile(profileId)
             return [user]
         } catch (e: any) {
-            console.log(e)
             return []
         }
     }
