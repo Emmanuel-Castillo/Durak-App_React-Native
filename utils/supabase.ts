@@ -5,6 +5,7 @@ import {random} from "nanoid";
 import {FriendRequest, User} from "@/type";
 import {useAuthStore} from "@/store/auth.store";
 import {Alert} from "react-native";
+import friends from "@/app/(tabs)/friends";
 
 
 // @ts-ignore
@@ -76,13 +77,13 @@ export const getSessionUserProfile = async () => {
         throw new Error(e as string)
     }
 }
-export const getFriendProfileIds = async (userId: number) => {
+export const getFriendProfileIds = async (user: User) => {
     try {
         // STEP 1: get relations
         const {data: relations, error: relError} = await supabase
             .from("friends")
             .select("user_id_1, user_id_2")
-            .or(`user_id_1.eq.${userId},user_id_2.eq.${userId}`);
+            .or(`user_id_1.eq.${user.id},user_id_2.eq.${user.id}`);
 
         if (relError) throw relError;
 
@@ -91,7 +92,7 @@ export const getFriendProfileIds = async (userId: number) => {
 
         // STEP 2: extract friend IDs
         const friendIds: number[] = relations.map(r =>
-            r.user_id_1 === userId ? r.user_id_2 : r.user_id_1
+            r.user_id_1 === user.id ? r.user_id_2 : r.user_id_1
         );
 
         return friendIds
@@ -127,6 +128,27 @@ export const getProfile = async (profileId: string) => {
     }
 }
 
+export const getSentRequests = async (sender: User) => {
+    try {
+        const {data: friendRequests, error: friendRequestErrors} = await supabase.from('friend_requests').select('*, sender: sender_id(*), receiver: receiver_id (*)').eq('sender_id', sender.id)
+        if (friendRequestErrors) throw friendRequestErrors
+
+        return friendRequests ?? []
+    } catch (e: any) {
+        console.log(e)
+        throw new Error(e as string)
+    }
+}
+export const getReceivedRequests = async (receiver: User) => {
+    try {
+        const {data, error} = await supabase.from('friend_requests').select('*, sender: sender_id(*), receiver: receiver_id (*)').eq('receiver_id', receiver.id)
+        if (error) throw error
+        return data ?? []
+    } catch (e: any) {
+        console.log(e)
+        throw new Error(e as string)
+    }
+}
 export const sendFriendRequest = async (sender: User, receiver: User) => {
     try {
         const {data, error} = await supabase.from('friend_requests').insert({
@@ -186,6 +208,7 @@ export const removeFriendship = async (user1: User, user2: User) => {
 
 export const updatePushToken = async (user: User, token: string) => {
     try {
+        console.log("updatePushToken. user: ", user, ", token: ", token)
         await supabase.from('user_push_tokens').upsert({user_id: user.id, expo_push_token: token})
     } catch (e: any) {
         console.log(e)

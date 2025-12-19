@@ -20,6 +20,7 @@ import PlayedCardsList from "@/components/game/PlayedCardsList";
 import PlayerList from "@/components/game/PlayerList";
 import OptionsMenu from "@/components/game/OptionsMenu";
 import {AntDesign} from "@expo/vector-icons";
+import CommentsList from "@/components/game/CommentsList";
 
 type GhostCardState = {
     card: Card | null;
@@ -28,7 +29,7 @@ type GhostCardState = {
 };
 
 const Board = ({comments}: { game?: Game, comments: string[] }) => {
-    const {game, canCounter, player, showAllComments} = useGameStore();
+    const {game, canCounter, player, playerError, showAllComments} = useGameStore();
     const {room} = useRoomStore()
     const {user} = useAuthStore()
 
@@ -155,19 +156,7 @@ const Board = ({comments}: { game?: Game, comments: string[] }) => {
     return (
         <View className={"flex-1"}>
             {showAllComments &&
-                <View className={"absolute inset-0 bg-gray-800/20 p-4 items-center justify-center"}
-                      style={{zIndex: 200}}>
-                    <FlatList
-                        className={"bg-orange-800 p-2 rounded gap-2"} data={comments} renderItem={({item}) =>
-                        <View className={"bg-orange-700 p-2 rounded"}>
-                            <Text>{item}</Text>
-                        </View>
-                    }
-                        ListHeaderComponent={<TouchableOpacity onPress={() => useGameStore.setState({showAllComments: false})}>
-                            <AntDesign name="close" size={24} color="white"/>
-                        </TouchableOpacity>}
-                    />
-                </View>
+                <CommentsList comments={comments}/>
             }
 
             {/* Winners list when game ends*/}
@@ -218,6 +207,9 @@ const Board = ({comments}: { game?: Game, comments: string[] }) => {
                                      getPlayedCardsRef={getPlayedCardsRef} hoveredPlayedCards={hoveredPlayedCards}/>
                     {canCounter && <Text
                         className={"text text-2xl text-center absolute bottom-4 left-1/2 transform -translate-x-1/2"}>Counter!</Text>}
+                    {playerError && <Text
+                        className={"text text-sm text-center absolute bottom-4 left-1/2 transform -translate-x-1/2"}>{playerError}</Text>}
+
                 </View>
 
                 {/* Right Side */}

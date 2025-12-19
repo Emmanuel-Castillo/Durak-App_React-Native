@@ -17,13 +17,13 @@ const RoomSetter = ({setterType}: RoomSetterProps) => {
     const {joinRoom, createRoom} = useRoomStore()
     const [inputValue, setInputValue] = React.useState("");
     const setterConfig: RoomSetterConfig = setterType === "Create" ? {
-            viewBackgroundColor: "bg-green-600",
+            viewBackgroundColor: "bg-green-700",
             inputPlaceholder: "Enter room name",
             switchLabel: "Friends Only?",
             onPressButton: createRoom
         } :
         {
-            viewBackgroundColor: "bg-blue-600",
+            viewBackgroundColor: "bg-blue-700",
             inputPlaceholder: "Enter room id",
             switchLabel: "Join Random?",
             onPressButton: joinRoom
@@ -32,7 +32,6 @@ const RoomSetter = ({setterType}: RoomSetterProps) => {
     return <View className={cn(setterConfig.viewBackgroundColor, 'rounded-lg p-4 gap-2')}>
         <Text className={"text text-2xl"}>{setterType} Room</Text>
         <CustomTextInput value={inputValue}
-                         textInputStyle={"p-2"}
                          placeholder={setterConfig.inputPlaceholder}
                          onChangeText={e => setInputValue(e)} maxLength={15}/>
         <Button title={setterType} onPress={() => setterConfig.onPressButton(inputValue)}/>

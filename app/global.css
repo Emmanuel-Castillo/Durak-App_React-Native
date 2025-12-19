@@ -7,7 +7,7 @@
 }
 
 .text-input_container {
-    @apply px-2 py-4 rounded-lg flex-row justify-between items-center bg-slate-900
+    @apply px-2 py-4 rounded-lg flex-row justify-between items-center bg-zinc-800
 }
 .text-input_container:focus {
     @apply border border-white
@@ -17,7 +17,7 @@
 }
 
 .themed-view {
-    @apply flex-1 bg-gray-800 p-4
+    @apply flex-1 bg-zinc-800 p-4
 }
 
 .themed-border {

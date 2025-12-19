@@ -44,7 +44,7 @@ const UserCard = ({user, isFetchedUser}: UserCardProps) => {
         <View className={"flex-1 gap-2 items-center"}>
             <Avatar userAvatar={user.avatar} size={100}/>
             <Text className={"text text-3xl"}>{user.username}</Text>
-            <Text className={"text text-sm p-2 bg-slate-950 rounded-full"}>ID: {user.profile_id}</Text>
+            <Text className={"text text-sm w-full  text-center bg-slate-950 rounded-full"}>ID: {user.profile_id}</Text>
 
             {isFetchedUser && <FriendStatusView searchedUser={user}/>}
 
@@ -60,18 +60,23 @@ const UserCard = ({user, isFetchedUser}: UserCardProps) => {
 }
 
 const FriendStatusView = ({searchedUser}: { searchedUser: User }) => {
-    const {user, friendIds, friendRequests, sendFriendRequest, removeFriendship} = useAuthStore()
+    const {friends, sentFriendRequests, receivedFriendRequests, sendFriendRequest, removeFriendship} = useAuthStore()
     const [isAFriend, setIsAFriend] = React.useState(false);
-    const [sentFriendRequest, setSentFriendRequest] = React.useState(false);
+    const [friendRequestStatus, setFriendRequestStatus] = React.useState<"Sent" | "Approve" | "Idle">("Idle");
 
     useEffect(() => {
-        setIsAFriend(friendIds.includes(searchedUser.id));
-    }, [friendIds]);
+        const isAFriend = friends.find(f => f.id === searchedUser.id);
+        if (isAFriend) {
+            setIsAFriend(true);
+            return
+        }
 
-    useEffect(() => {
-        const foundInRequests = friendRequests.find(r => r.sender_id === searchedUser.id || r.receiver_id === searchedUser.id)
-        setSentFriendRequest(!!foundInRequests)
-    }, [friendRequests]);
+        const sentRequest = sentFriendRequests.find((r) => r.receiver_id === searchedUser.id)
+        if (sentRequest) setFriendRequestStatus("Sent")
+
+        const receivedRequest = receivedFriendRequests.find((r) => r.sender_id === searchedUser.id)
+        if (receivedRequest) setFriendRequestStatus("Approve")
+    }, []);
 
     const onPressSendFriendRequest = () => {
         try {
@@ -118,11 +123,14 @@ const FriendStatusView = ({searchedUser}: { searchedUser: User }) => {
                 <TouchableOpacity onPress={onPressRemoveFriend} className={"bg-red-300 px-4 py-2 rounded-full"}><Text>Remove
                     friend</Text></TouchableOpacity></> :
             <>
-                {!sentFriendRequest ? <TouchableOpacity onPress={onPressSendFriendRequest}
-                                                        className={"bg-green-300 px-4 py-2 rounded-full"}><Text>Send
-                        friend
-                        request</Text></TouchableOpacity> :
-                    <Text className={"bg-grey-700 px-4 py-2 rounded-full"}>Send request</Text>
+            {friendRequestStatus === "Idle" &&  (<TouchableOpacity onPress={onPressSendFriendRequest}
+                                                                 className={"bg-green-300 px-4 py-2 rounded-full"}><Text>Send
+                friend
+                request</Text></TouchableOpacity>)}
+                {friendRequestStatus === "Sent" &&
+                    <Text className={"bg-green-700 px-4 py-2 rounded-full"}>Request sent.</Text>
+                }{friendRequestStatus === "Approve" &&
+                    <Text className={"bg-green-700 px-4 py-2 rounded-full"}>Approve request.</Text>
                 }
             </>}
     </View>

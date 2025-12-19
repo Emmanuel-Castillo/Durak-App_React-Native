@@ -29,9 +29,6 @@ export const useRoomStore = create<RoomState>((set) => ({
             const socket = useAuthStore.getState().socket;
             if (!socket) throw new Error("No socket found.");
 
-            socket.on("connect", () => {
-                set({room: null})
-            })
             socket.on("disconnect", () => {
                 set({room: null});
             })

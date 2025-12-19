@@ -19,7 +19,7 @@ const TabLayout = () => {
                 opacity: 1,
                 height: 80,
                 paddingTop: 10,
-                backgroundColor: "#334155",
+                backgroundColor: "#18181B",
             }
         }}>
             <Tabs.Screen name="home" options={{

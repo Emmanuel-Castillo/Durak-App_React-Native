@@ -41,10 +41,8 @@ const DefenderHand = ({
     const defEndDrag = () => {
         // console.log("Defender end dragging! defCard: ", defCard.current, " atkCardPair: ", atkCardPair.current, " onBoard:", defCardOnBoard, canCounter)
         if (defCard.current && hoveredPlayedCardsRef.current) {
-            console.log("Defending...")
             defendMove(defCard.current, hoveredPlayedCardsRef.current)
         } else if (hoveredOverBoardRef.current && defCard.current && canCounter.current) {
-            console.log("Countering...")
             counterMove(defCard.current)
         }
 
@@ -100,7 +98,10 @@ const DefenderHand = ({
                     </TouchableOpacity>
                     {yieldButtonTouched &&
                         <View className={"gap-2 flex-row justify-center items-center"}>
-                            <TouchableOpacity className={"bg-green-600 p-1 rounded"} onPress={yieldTurn}>
+                            <TouchableOpacity className={"bg-green-600 p-1 rounded"} onPress={() => {
+                                yieldTurn();
+                                setYieldButtonTouched(false)
+                            }}>
                                 <AntDesign name="check" size={24} color="white"/>
                             </TouchableOpacity>
                             <TouchableOpacity className={"bg-red-600 p-1 rounded"}

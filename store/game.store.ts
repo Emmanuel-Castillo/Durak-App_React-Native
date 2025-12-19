@@ -79,6 +79,12 @@ export const useGameStore = create<GameState>((set) => ({
             const newComments = useGameStore.getState().comments.concat(comment);
             set({comments: newComments});
         })
+
+        socket.on("errorMessage", (message: string) => {
+            console.log(message)
+            set({playerError: message});
+            setTimeout(() => set({playerError: null}), 3000)
+        })
     },
     startFakeGame: (game: Game) => {
         set({game: game, player: game.players[0]})

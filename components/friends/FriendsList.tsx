@@ -1,30 +1,19 @@
-import SearchableUserList from "@/components/shared/SearchableUserList";
 import React, {useEffect, useState} from "react";
 import {User} from "@/type";
 import {getFriendProfiles} from "@/utils/supabase";
 import {useAuthStore} from "@/store/auth.store";
-import {Alert} from "react-native";
+import {Alert, Text, View} from "react-native";
+import UserList from "@/components/shared/UserList";
 
 const FriendsList = () => {
-    const {friendIds} = useAuthStore()
-    const [friends, setFriends] = useState<User[]>([])
+    const {friends} = useAuthStore()
 
-    useEffect(() => {
-        const fetchFriendProfiles = async () => {
-            try {
-                setFriends(await getFriendProfiles(friendIds))
-            } catch (e: any) {
-                Alert.alert(e.toString())
-            }
-        }
-        fetchFriendProfiles()
-    }, []);
-
-    const filterFriends = (input: string) => {
-        if (input.length === 0) return friends;
-        return friends.filter(f => f.username.includes(input))
-    }
-    return <SearchableUserList onSubmitInput={filterFriends} initialUsers={friends}/>
+    return <UserList users={friends}
+                     emptyListTextElement={
+                                   <Text className={"text text-lg text-center"}>No friends found. Head to the
+                                       &#39;Add Friend&#39;
+                                       view and search for a new friend!</Text>
+                               }/>
 }
 
 export default FriendsList

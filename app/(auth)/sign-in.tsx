@@ -40,7 +40,7 @@ const SignIn = () => {
     }
 
     return (
-        <KeyboardAvoidingView className={"gap-6 p-6 rounded-lg border bg-gray-300 dark:bg-gray-700"}>
+        <KeyboardAvoidingView className={"gap-6 p-6 rounded-lg border bg-gray-700"}>
             <Text className={"text text-center text-3xl"}>{authType}</Text>
             <View className={"gap-4"}>
                 {authType === "Sign Up" && <CustomTextInput onChangeText={(text) => setForm({...form, username: text})}
@@ -57,7 +57,7 @@ const SignIn = () => {
                                  textContentType={"password"}
                                  value={form.password} secureText={!showFormPassword} icon={
                     <Ionicons name={!showFormPassword ? "eye" : "eye-off"} size={24}
-                              color={useColorScheme() === "dark" ? "white" : "black"}
+                              color={"white"}
                               onPress={() => setShowFormPassword(!showFormPassword)}/>
 
                 }/>

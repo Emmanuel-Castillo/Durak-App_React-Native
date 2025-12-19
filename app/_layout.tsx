@@ -20,11 +20,10 @@ const RootLayout = () => {
                 const token = await registerForPushNotificationsAsync()
                 if (token) await updatePushToken(user, token)
             } catch (e: any) {
-                console.error(e)
-                Alert.alert(e.toString())
+                console.log(e)
+                // Alert.alert(e.toString())
             }
         }
-
         user && setupNotifications(user)
     }, [user]);
 

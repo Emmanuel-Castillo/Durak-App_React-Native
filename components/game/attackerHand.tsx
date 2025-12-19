@@ -35,10 +35,7 @@ const AttackerHand = ({cardDragImpl, playerCardBoardRefs}: PlayerHandProps) => {
         handleDragMove(dx, dy)
     }
     const atkEndDrag = () => {
-        console.log("atkEndDrag")
         const player = useGameStore.getState().player
-
-        console.log("player: ", player, ", atkCard.current: ", atkCard.current, ", hoveredOverBoard: ", hoveredOverBoardRef.current)
         if (!player) return;
         if (atkCard.current && hoveredOverBoardRef.current) {
             switch (player.role) {

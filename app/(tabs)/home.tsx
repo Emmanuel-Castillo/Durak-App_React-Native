@@ -13,7 +13,7 @@ const Home = () => {
         subscribeToRoomEvents()
     }, []);
 
-    if (room) return <Redirect href={"/room"}/>
+    if (room) return <Redirect href={"/(play)/room"}/>
     return (
         <SafeAreaView className={"themed-view gap-4"}>
             <RoomSetter setterType={"Join"}/>

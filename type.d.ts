@@ -11,7 +11,9 @@ export type FriendRequest = {
     id: number;
     created_at: Date;
     sender_id: number;
+    sender: User;
     receiver_id: number;
+    receiver: User;
 }
 
 export type User = {

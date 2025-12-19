@@ -8,14 +8,14 @@ import {useAuthStore} from "@/store/auth.store";
 import {useGameStore} from "@/store/game.store";
 
 const Room = () => {
-    const {socket, room, leaveRoom, removeFromRoom} = useRoomStore()
+    const {room, leaveRoom, removeFromRoom} = useRoomStore()
     const {game, startGame, listenForGameData} = useGameStore()
     const {user} = useAuthStore()
     useEffect(() => {
         listenForGameData()
     }, []);
 
-    if (!user || !socket || !room) return <Redirect href={"/(tabs)/home"}/>
+    if (!user || !room) return <Redirect href={"/(tabs)/home"}/>
 
     if (room && game) return <Redirect href={"/game"}/>
 
@@ -31,13 +31,14 @@ const Room = () => {
             </View>
             <FlatList data={room.users} renderItem={({item}) => (
                 <UserRow user={item}
-                         removeFromRoomPermission={{
-                             enableRemoveFromRoom: isHost && user.account_id !== item.account_id,
-                             onClickRemoveFromRoom: () => removeFromRoom(item.account_id)
-                         }}
+                         // removeFromRoomPermission={{
+                         //     enableRemoveFromRoom: isHost && user.account_id !== item.account_id,
+                         //     onClickRemoveFromRoom: () => removeFromRoom(item.account_id)
+                         // }}
                 />
             )}
                       ListHeaderComponent={<Text className={"text text-2xl"}>Players</Text>}
+                      contentContainerClassName={"gap-2"}
             />
 
             <View className={"gap-4"}>

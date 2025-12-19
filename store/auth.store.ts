@@ -5,7 +5,7 @@ import {
     getFriendProfileIds,
     sendFriendRequest,
     approveFriendRequest,
-    deleteFriendRequest, removeFriendship
+    deleteFriendRequest, removeFriendship, getSentRequests, getReceivedRequests, getFriendProfiles
 } from "@/utils/supabase";
 import {Alert} from "react-native";
 import {io, Socket} from "socket.io-client";
@@ -14,8 +14,9 @@ type AuthState = {
     isAuthenticated: boolean;
     user: User | null;
     socket: Socket | null;
-    friendIds: number[];
-    friendRequests: FriendRequest[];
+    friends: User[];
+    sentFriendRequests: FriendRequest[];
+    receivedFriendRequests: FriendRequest[];
     isLoading: boolean;
 
     connectSocket: () => void;
@@ -35,8 +36,9 @@ export const useAuthStore = create<AuthState>((set) => ({
     isAuthenticated: false,
     user: null,
     socket: null,
-    friendIds: [],
-    friendRequests: [],
+    friends: [],
+    sentFriendRequests: [],
+    receivedFriendRequests: [],
     isLoading: true,
 
     connectSocket: () => {
@@ -68,12 +70,15 @@ export const useAuthStore = create<AuthState>((set) => ({
         set({isLoading: true});
         try {
             const user: User = await getSessionUserProfile();
-            const friendIds: number[] = await getFriendProfileIds(user.id)
+            const friendIds: number[] = await getFriendProfileIds(user)
+            const friends : User[] = await getFriendProfiles(friendIds)
+            const sentFriendRequests = await getSentRequests(user)
+            const receivedFriendRequests = await getReceivedRequests(user)
 
-            set({isAuthenticated: true, user, friendIds});
+            set({isAuthenticated: true, user, friends, sentFriendRequests, receivedFriendRequests});
         } catch (e: any) {
             // console.error("fetchAuthenticatedUser", e);
-            set({isAuthenticated: false, user: null})
+            set({isAuthenticated: false, user: null, friends: [], sentFriendRequests: [], receivedFriendRequests: []});
         } finally {
             set({isLoading: false});
         }
@@ -85,11 +90,11 @@ export const useAuthStore = create<AuthState>((set) => ({
     sendFriendRequest: async (friend: User) => {
         try {
             const user = useAuthStore.getState().user;
-            const friendRequests = useAuthStore.getState().friendRequests;
+            const friendRequests = useAuthStore.getState().sentFriendRequests;
             if (!user) throw new Error("User not found");
             const data = await sendFriendRequest(user, friend)
 
-            set({friendRequests: friendRequests.concat(data)})
+            set({sentFriendRequests: friendRequests.concat(data)})
             // socket emit request to server
         } catch (e: any) {
             Alert.alert(e.toString());
@@ -117,10 +122,10 @@ export const useAuthStore = create<AuthState>((set) => ({
             if (!user) throw new Error("User not found.")
             await removeFriendship(user, friend)
 
-            const friendIds = useAuthStore.getState().friendIds;
-            set({friendIds: friendIds.filter(id => id !== friend.id)})
+            const friends = useAuthStore.getState().friends;
+            set({friends: friends.filter(f => f.id !== friend.id)})
         } catch (e: any) {
             Alert.alert(e.toString())
         }
-    }
+    },
 }))

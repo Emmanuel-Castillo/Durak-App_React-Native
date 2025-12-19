@@ -1,10 +1,12 @@
-import {View, Text, TextInput, Image, FlatList, TouchableOpacity} from 'react-native'
+import {View, Text, TextInput, Image, FlatList, TouchableOpacity, Alert} from 'react-native'
 import React, {useEffect} from 'react'
 import {SafeAreaView} from "react-native-safe-area-context";
 import {Link} from "expo-router";
 import FriendsList from "@/components/friends/FriendsList";
 import AddFriendList from "@/components/friends/AddFriendList";
 import cn from "clsx";
+import SentFriendRequestList from "@/components/friends/SentFriendRequestList";
+import ApproveFriendRequestList from "@/components/friends/ApproveFriendRequestList";
 
 type ViewType = "Friends" | "Add Friend" | "Sent Requests" | "Approve Requests"
 const Friends = () => {
@@ -13,13 +15,13 @@ const Friends = () => {
     const renderView = () => {
         switch (toggleView) {
             case "Friends":
-                return <FriendsList/>
+                return <FriendsList />
             case "Add Friend":
                 return <AddFriendList/>
             case "Sent Requests":
-                return <Text>Sent</Text>
+                return <SentFriendRequestList/>
             case "Approve Requests":
-                return <Text>Approve Requests</Text>
+                return <ApproveFriendRequestList/>
         }
     }
 
