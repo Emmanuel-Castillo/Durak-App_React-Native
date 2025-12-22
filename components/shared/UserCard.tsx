@@ -28,7 +28,7 @@ const CornerInsignia = ({letter, customClassName}: { letter: string, customClass
 
 }
 const UserInfoCard = ({header, value, color}: { header: string, value: any, color: string }) => {
-    return <LinearGradient colors={[color, 'transparent']} className={cn("rounded-lg p-4")} style={{borderRadius: 8}}>
+    return <LinearGradient colors={[color, 'transparent']} className={cn("rounded-lg p-4 w-full")} style={{borderRadius: 8}}>
         <Text className={"text text-xl underline text-center"}>{header}</Text>
         <Text className={"text text-xl text-center"}>{value}</Text>
     </LinearGradient>
@@ -43,7 +43,7 @@ const UserCard = ({user, isFetchedUser}: UserCardProps) => {
 
         <View className={"flex-1 gap-2 items-center"}>
             <Avatar userAvatar={user.avatar} size={100}/>
-            <Text className={"text text-3xl"}>{user.username}</Text>
+            <Text className={"text text-3xl w-full text-center"}>{user.username}</Text>
             <Text className={"text text-sm w-full  text-center bg-slate-950 rounded-full"}>ID: {user.profile_id}</Text>
 
             {isFetchedUser && <FriendStatusView searchedUser={user}/>}
@@ -60,7 +60,14 @@ const UserCard = ({user, isFetchedUser}: UserCardProps) => {
 }
 
 const FriendStatusView = ({searchedUser}: { searchedUser: User }) => {
-    const {friends, sentFriendRequests, receivedFriendRequests, sendFriendRequest, removeFriendship} = useAuthStore()
+    const {
+        friends,
+        sentFriendRequests,
+        receivedFriendRequests,
+        sendFriendRequest,
+        removeFriendship,
+        approveFriendRequest
+    } = useAuthStore()
     const [isAFriend, setIsAFriend] = React.useState(false);
     const [friendRequestStatus, setFriendRequestStatus] = React.useState<"Sent" | "Approve" | "Idle">("Idle");
 
@@ -114,24 +121,37 @@ const FriendStatusView = ({searchedUser}: { searchedUser: User }) => {
             Alert.alert(e.toString())
         }
     }
+    const onPressApproveFriendRequest = () => {
+        try {
+            Alert.alert("Approve request", `Are you sure you want to make ${searchedUser.username} your friend?`, [
+                {
+                    text: "Yes", onPress: () => {
+                        const request = receivedFriendRequests.find((r) => r.sender_id === searchedUser.id)
+                        if (!request) throw new Error("Request not found for searched user")
+                        approveFriendRequest(request)
+                    }
+                },
+                {
+                    text: "No", onPress: () => {
+                    }
+                }
+            ])
+        } catch (e: any) {
+            Alert.alert(e.toString())
+        }
+    }
 
     return <View className={"flex-row justify-center gap-4 py-2"}>
-        {/* Status */}
         {isAFriend ?
             <>
                 <Text className={"bg-green-300 px-4 py-2 rounded-full"}>Friend ✓</Text>
                 <TouchableOpacity onPress={onPressRemoveFriend} className={"bg-red-300 px-4 py-2 rounded-full"}><Text>Remove
                     friend</Text></TouchableOpacity></> :
             <>
-            {friendRequestStatus === "Idle" &&  (<TouchableOpacity onPress={onPressSendFriendRequest}
-                                                                 className={"bg-green-300 px-4 py-2 rounded-full"}><Text>Send
-                friend
-                request</Text></TouchableOpacity>)}
-                {friendRequestStatus === "Sent" &&
-                    <Text className={"bg-green-700 px-4 py-2 rounded-full"}>Request sent.</Text>
-                }{friendRequestStatus === "Approve" &&
-                    <Text className={"bg-green-700 px-4 py-2 rounded-full"}>Approve request.</Text>
-                }
+                {friendRequestStatus === "Idle" && (<TouchableOpacity onPress={onPressSendFriendRequest} className={"bg-green-300 px-4 py-2 rounded-full"}><Text>Send friend request</Text></TouchableOpacity>)}
+                {friendRequestStatus === "Sent" && <Text className={"text-sm text-center bg-green-700 px-4 py-2 rounded-full"}>Request sent.</Text>}
+                {friendRequestStatus === "Approve" && <TouchableOpacity onPress={onPressApproveFriendRequest} className={"bg-green-700 px-4 py-2 rounded-full"}><Text>Approve request.</Text></TouchableOpacity>
+            }
             </>}
     </View>
 }

@@ -18,6 +18,16 @@ export const supabase = createClient(process.env.EXPO_PUBLIC_SUPABASE_PROJECT_UR
     },
 });
 
+export const signUpAnonymously = async () => {
+    try {
+        const {data, error} = await supabase.auth.signInAnonymously();
+        if (error) throw error;
+
+    } catch (e) {
+        console.log(e)
+        throw new Error(e as string)
+    }
+}
 export const signUp = async (username: string, email: string, password: string,) => {
     try {
         let randomId = generateRandomId(6)
@@ -63,7 +73,23 @@ export const getSessionUserProfile = async () => {
     try {
         const {data: {user}, error: getUserError} = await supabase.auth.getUser()
         if (getUserError) throw getUserError;
-        if (!user) return null
+        if (!user) throw new Error('User not found');
+
+        // Check if user is anonymous
+        if (user.is_anonymous) {
+            const anomUser : User = {
+                id: 9999,
+                created_at: new Date(),
+                username: "Guest",
+                email: "",
+                avatar: undefined,
+                num_wins: 0,
+                account_id: generateRandomId(6),
+                profile_id: generateRandomId(6),
+            }
+
+            return {isAnon: true, user: anomUser}
+        }
 
         const {
             data: profileData,
@@ -71,7 +97,7 @@ export const getSessionUserProfile = async () => {
         } = await supabase.from('profiles').select('*').eq('account_id', user.id).single()
         if (profileError) throw profileError
 
-        return profileData
+        return {isAnon: false, user: profileData}
     } catch (e) {
         console.log(e)
         throw new Error(e as string)
@@ -154,9 +180,15 @@ export const sendFriendRequest = async (sender: User, receiver: User) => {
         const {data, error} = await supabase.from('friend_requests').insert({
             sender_id: sender.id,
             receiver_id: receiver.id,
-        }).select()
+        }).select().single()
         if (error) throw error
-        return data
+
+        const newFriendRequest : FriendRequest = {
+            ...data,
+            sender,
+            receiver
+        }
+        return newFriendRequest
     } catch (e) {
         console.log(e)
         throw new Error(e as string)
@@ -213,5 +245,15 @@ export const updatePushToken = async (user: User, token: string) => {
     } catch (e: any) {
         console.log(e)
         Alert.alert(e.toString())
+    }
+}
+export const updateGameWins = async (user: User) => {
+    try {
+        const {data, error} = await supabase.from('profiles').update({num_wins: user.num_wins + 1}).eq('id', user.id)
+        if (error) throw error
+        return;
+    } catch (e: any) {
+        console.log(e)
+        throw new Error(e as string)
     }
 }

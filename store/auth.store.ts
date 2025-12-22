@@ -11,6 +11,7 @@ import {Alert} from "react-native";
 import {io, Socket} from "socket.io-client";
 
 type AuthState = {
+    isAnonymous: boolean,
     isAuthenticated: boolean;
     user: User | null;
     socket: Socket | null;
@@ -27,6 +28,7 @@ type AuthState = {
     fetchAuthenticatedUser: () => Promise<void>;
     resetAuthenticatedUser: () => void;
 
+    fetchFriendsAndRequests: () => void;
     sendFriendRequest: (friend: User) => void;
     approveFriendRequest: (request: FriendRequest) => void;
     rejectFriendRequest: (request: FriendRequest) => void;
@@ -34,6 +36,7 @@ type AuthState = {
 }
 export const useAuthStore = create<AuthState>((set) => ({
     isAuthenticated: false,
+    isAnonymous: false,
     user: null,
     socket: null,
     friends: [],
@@ -69,16 +72,14 @@ export const useAuthStore = create<AuthState>((set) => ({
     fetchAuthenticatedUser: async () => {
         set({isLoading: true});
         try {
-            const user: User = await getSessionUserProfile();
-            const friendIds: number[] = await getFriendProfileIds(user)
-            const friends : User[] = await getFriendProfiles(friendIds)
-            const sentFriendRequests = await getSentRequests(user)
-            const receivedFriendRequests = await getReceivedRequests(user)
+            const {isAnon, user} = await getSessionUserProfile();
 
-            set({isAuthenticated: true, user, friends, sentFriendRequests, receivedFriendRequests});
+
+
+            set({isAuthenticated: true, user, isAnonymous: isAnon});
         } catch (e: any) {
             // console.error("fetchAuthenticatedUser", e);
-            set({isAuthenticated: false, user: null, friends: [], sentFriendRequests: [], receivedFriendRequests: []});
+            set({isAuthenticated: false, user: null});
         } finally {
             set({isLoading: false});
         }
@@ -87,6 +88,19 @@ export const useAuthStore = create<AuthState>((set) => ({
         set({user: null, isAuthenticated: false})
     },
 
+    fetchFriendsAndRequests: async () => {
+        try {
+            const user = useAuthStore.getState().user
+            if (!user) throw new Error("User is not defined.")
+            const friendIds: number[] = await getFriendProfileIds(user)
+            const friends: User[] = await getFriendProfiles(friendIds)
+            const sentFriendRequests = await getSentRequests(user)
+            const receivedFriendRequests = await getReceivedRequests(user)
+            set({friends, sentFriendRequests, receivedFriendRequests})
+        } catch (e: any) {
+            set({friends: [], sentFriendRequests: [], receivedFriendRequests: []})
+        }
+    },
     sendFriendRequest: async (friend: User) => {
         try {
             const user = useAuthStore.getState().user;
@@ -102,21 +116,29 @@ export const useAuthStore = create<AuthState>((set) => ({
     },
     approveFriendRequest: async (request: FriendRequest) => {
         try {
+            const requests = useAuthStore.getState().receivedFriendRequests
+            const friends = useAuthStore.getState().friends
             await approveFriendRequest(request)
 
-            // socket emit approval to server
+            set({
+                friends: friends.concat(request.sender),
+                receivedFriendRequests: requests.filter(r => r.id !== request.id)
+            })
         } catch (e: any) {
             Alert.alert(e.toString());
         }
     },
     rejectFriendRequest: async (request: FriendRequest) => {
         try {
+            const requests = useAuthStore.getState().receivedFriendRequests
             await deleteFriendRequest(request)
+
+            set({receivedFriendRequests: requests.filter(r => r.id !== request.id)})
         } catch (e: any) {
             Alert.alert(e.toString());
         }
     },
-    removeFriendship: async(friend: User) => {
+    removeFriendship: async (friend: User) => {
         try {
             const user = useAuthStore.getState().user
             if (!user) throw new Error("User not found.")

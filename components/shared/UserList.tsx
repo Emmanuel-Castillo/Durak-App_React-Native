@@ -15,7 +15,7 @@ const UserList = ({users, loadingList, emptyListTextElement}: UserListProps) => 
     return <View className={"flex-1"}>
         {loadingList ?
             <View className={"flex-1 items-center justify-center gap-4"}><ActivityIndicator size={80}/><Text
-                className={"text text-2xl"}>Loading</Text></View> :
+                className={"text text-2xl w-full text-center"}>Loading</Text></View> :
             <FlatList data={users}
               keyExtractor={(item) => item.id.toString()}
               contentContainerClassName={"flex-1 gap-4"}

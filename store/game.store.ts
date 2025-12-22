@@ -4,6 +4,7 @@ import {Socket} from 'socket.io-client';
 import {useRoomStore} from "@/store/room.store";
 import {sortPlayersStartingWithUser} from "@/lib/sortPlayers";
 import {useAuthStore} from "@/store/auth.store";
+import {updateGameWins} from "@/utils/supabase";
 
 type GameState = {
     game: Game | null;
@@ -73,6 +74,17 @@ export const useGameStore = create<GameState>((set) => ({
             game.players = sortPlayersStartingWithUser(userPlayer.user.account_id, game.players)
             set({game: game, player: userPlayer});
         })
+
+        socket.on("updateGameWins", async () => {
+            try {
+                const user = useAuthStore.getState().user;
+                if (!user) throw new Error("user not found");
+                await updateGameWins(user)
+            } catch (e) {
+                console.log(e)
+            }
+        })
+
 
         socket.on("newComment", (comment: string) => {
             // console.log("New comment", comment)
