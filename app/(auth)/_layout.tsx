@@ -1,29 +1,37 @@
-import React, {useEffect} from 'react'
-import {SafeAreaView} from "react-native-safe-area-context";
-import {Redirect, Slot} from "expo-router";
-import Animated, {useSharedValue, withTiming} from "react-native-reanimated";
-import {useAuthStore} from "@/store/auth.store";
-import {LinearGradient} from "expo-linear-gradient";
+import { useAuthStore } from "@/store/auth.store";
+import { Redirect, Slot } from "expo-router";
+import React, { useEffect } from "react";
+import Animated, { useSharedValue, withTiming } from "react-native-reanimated";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const AuthLayout = () => {
-    const {isAuthenticated} = useAuthStore()
-    const opacity = useSharedValue(0)
-    const translateY = useSharedValue(50)
+  const { isAuthenticated } = useAuthStore();
+  const opacity = useSharedValue(0);
+  const translateY = useSharedValue(50);
 
-    useEffect(() => {
-        opacity.value = withTiming(1, {duration: 500})
-        translateY.value = withTiming(0, {duration: 500})
-    }, [opacity, translateY]);
+  useEffect(() => {
+    opacity.value = withTiming(1, { duration: 500 });
+    translateY.value = withTiming(0, { duration: 500 });
+  }, [opacity, translateY]);
 
-    if (isAuthenticated) return <Redirect href={"/(tabs)/home"}/>
-    return (
-        <SafeAreaView className={"flex-1 items-center justify-center px-8 bg-zinc-950"}>
-            <LinearGradient colors={['#27272A', 'transparent']} className={"absolute inset-0"} locations={[.5, .9]}/>
-            <Animated.View style={{opacity: opacity, translateY: translateY}} className={"w-full md:max-w-lg"}>
-                <Slot/>
-            </Animated.View>
-        </SafeAreaView>
-    )
-}
+  if (isAuthenticated) return <Redirect href={"/(tabs)/home"} />;
+  return (
+    <SafeAreaView
+      className={"flex-1 items-center justify-center px-8 bg-zinc-900"}
+    >
+      {/* <LinearGradient
+        colors={["#27272A", "transparent"]}
+        className={"absolute inset-0"}
+        locations={[0.5, 0.9]}
+      /> */}
+      <Animated.View
+        style={{ opacity: opacity, translateY: translateY }}
+        className={"w-full md:max-w-lg"}
+      >
+        <Slot />
+      </Animated.View>
+    </SafeAreaView>
+  );
+};
 
-export default AuthLayout
+export default AuthLayout;

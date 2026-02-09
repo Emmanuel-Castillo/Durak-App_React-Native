@@ -1,7 +1,6 @@
 import * as Notifications from "expo-notifications";
 import * as Device from "expo-device"
 import Constants from "expo-constants";
-import {Alert} from "react-native";
 
 // This handler determines how your app handles notifications that come in while the app is foregrounded.
 Notifications.setNotificationHandler({

@@ -30,7 +30,7 @@ export type User = {
 export type Player = {
     user: User;
     hand: Card[];
-    role: "FirstAttacker" | "Attacker" | "Defender" | null;
+    role: "FirstAttacker" | "Attacker" | "Defender" | "Inactive";
     nextPlayerUserId: number;
 }
 

@@ -8,13 +8,12 @@ import Board from "@/components/game/board";
 import {useGameStore} from "@/store/game.store";
 
 const Game = () => {
-    const {game, comments} = useGameStore()
-    if (
-        !game) return <Redirect href={"/room"}/>
+    const {game} = useGameStore()
+    if (!game) return <Redirect href={"/room"}/>
 
     return (
         <SafeAreaView className={"themed-view gap-4 relative"}>
-            <Board game={game} comments={comments}/>
+            <Board/>
             {/*<Button title={"Leave Game"}/>*/}
         </SafeAreaView>
     )

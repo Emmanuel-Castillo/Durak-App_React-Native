@@ -32,8 +32,9 @@ const UserPlayerRow = ({cardDragImpl, playerCardBoardRefs}: UserPlayerRowProps) 
             <TsarCardWithDeck tsarCard={tsarCard} deckLength={deckLength} gameState={gameState}/>
 
         </View>
-        {player.role === "Defender" ?
-            <DefenderHand cardDragImpl={cardDragImpl} playerCardBoardRefs={playerCardBoardRefs}/> :
+        {player.role === "Defender" &&
+            <DefenderHand cardDragImpl={cardDragImpl} playerCardBoardRefs={playerCardBoardRefs}/>}
+        {player.role === "Attacker" || player.role === "FirstAttacker" &&
             <AttackerHand cardDragImpl={cardDragImpl} playerCardBoardRefs={playerCardBoardRefs}/>}
     </View>
 }

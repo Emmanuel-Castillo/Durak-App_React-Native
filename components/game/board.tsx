@@ -28,7 +28,7 @@ type GhostCardState = {
     startY: number;
 };
 
-const Board = ({comments}: { game?: Game, comments: string[] }) => {
+const Board = () => {
     const {game, canCounter, player, playerError, showAllComments} = useGameStore();
     const {room} = useRoomStore()
     const {user} = useAuthStore()

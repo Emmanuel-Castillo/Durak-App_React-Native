@@ -1,26 +1,29 @@
-import React, {useEffect, useState} from 'react'
-import {SafeAreaView} from "react-native-safe-area-context";
-import {useRoomStore} from "@/store/room.store";
-import {Redirect} from "expo-router";
 import RoomSetter from "@/components/home/RoomSetter";
-import {useAuthStore} from "@/store/auth.store";
+import { useRoomStore } from "@/store/room.store";
+import { SocketStatus, useSocketStore } from "@/store/socket.store";
+import { Redirect } from "expo-router";
+import React, { useEffect } from "react";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const Home = () => {
-    const {subscribeToRoomEvents, room} = useRoomStore()
-    const {connectSocket} = useAuthStore()
-    useEffect(() => {
-        connectSocket()
-        subscribeToRoomEvents()
-    }, []);
+  const { subscribeToRoomEvents, room } = useRoomStore();
+  const { connectSocket, connectionStatus } = useSocketStore();
+  useEffect(() => {
+    connectSocket();
+  }, []);
 
-    if (room) return <Redirect href={"/(play)/room"}/>
-    return (
-        <SafeAreaView className={"themed-view gap-4"}>
-            <RoomSetter setterType={"Join"}/>
-            <RoomSetter setterType={"Create"}/>
-        </SafeAreaView>
+  useEffect(() => {
+    if (connectionStatus === SocketStatus.CONNECTED) subscribeToRoomEvents();
+  }, [connectionStatus]);
 
-        //
-    )
-}
-export default Home
+  if (room) return <Redirect href={"/(play)/room"} />;
+  return (
+    <SafeAreaView className={"themed-view gap-4"}>
+      <RoomSetter setterType={"Join"} />
+      <RoomSetter setterType={"Create"} />
+    </SafeAreaView>
+
+    //
+  );
+};
+export default Home;

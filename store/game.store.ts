@@ -68,18 +68,22 @@ export const useGameStore = create<GameState>((set) => ({
 
             // Grab user player
             const userPlayer = game.players.find(u => u.user.account_id === user.account_id)
-            if (!userPlayer) return;
 
-            // Sort players starting with own user player
-            game.players = sortPlayersStartingWithUser(userPlayer.user.account_id, game.players)
-            set({game: game, player: userPlayer});
+            // Sort players starting with own user player (if user player is still in-game)
+            game.players = sortPlayersStartingWithUser(userPlayer!, game.players)
+            console.log("[listenForGameData]", user.username, " received game data:", game.gameState)
+            set({game: game, player: userPlayer!});
         })
 
-        socket.on("updateGameWins", async () => {
+        socket.on("updateGameWins", async (winners: Player[]) => {
             try {
                 const user = useAuthStore.getState().user;
-                if (!user) throw new Error("user not found");
-                await updateGameWins(user)
+                const isAnon = useAuthStore.getState().isAnonymous
+                if (!user) throw new Error("User not found");
+                if (isAnon) throw new Error("User is anonymous")
+
+                if (winners.at(-1)?.user.account_id === user.account_id)
+                    await updateGameWins(user)
             } catch (e) {
                 console.log(e)
             }
@@ -93,7 +97,6 @@ export const useGameStore = create<GameState>((set) => ({
         })
 
         socket.on("errorMessage", (message: string) => {
-            console.log(message)
             set({playerError: message});
             setTimeout(() => set({playerError: null}), 3000)
         })
@@ -102,17 +105,17 @@ export const useGameStore = create<GameState>((set) => ({
         set({game: game, player: game.players[0]})
     },
     firstMove: card => {
-        console.log("FirstMove")
+        // console.log("FirstMove")
         const socket = useAuthStore.getState().socket;
         if (!socket) return;
         socket.emit("firstMove", {card});
     },
     attackMove: card => {
-        console.log("AttackMove")
+        // console.log("AttackMove")
         const socket = useAuthStore.getState().socket;
         if (!socket) return;
         socket.emit("attackMove", {card});
-        console.log("Send attackMove to server", card)
+        // console.log("Send attackMove to server", card)
     },
     endAttackerTurn: () => {
         const socket = useAuthStore.getState().socket;
@@ -153,20 +156,20 @@ export const useGameStore = create<GameState>((set) => ({
     defendMove: (defCard, cardPair) => {
         const socket = useAuthStore.getState().socket;
         if (!socket) return;
-        console.log("Emitting defendMove...")
+        // console.log("Emitting defendMove...")
         socket.emit("defendMove", {defCard, cardPair});
     },
     counterMove: counterCard => {
         const socket = useAuthStore.getState().socket;
         if (!socket) return;
-        console.log("Emitting counterMove...")
+        // console.log("Emitting counterMove...")
         socket.emit("counterMove", {counterCard})
     },
     yieldTurn: () => {
         const socket = useAuthStore.getState().socket;
         if (!socket) return;
 
-        console.log("Emitting yieldTurn");
+        // console.log("Emitting yieldTurn");
         socket.emit("yieldTurn");
     },
 }))
