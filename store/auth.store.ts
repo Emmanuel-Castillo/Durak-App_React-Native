@@ -25,6 +25,7 @@ type AuthState = {
   isLoading: boolean;
   socketTimeout: boolean;
 
+  fetchGuestUser: () => void;
   fetchAuthenticatedUser: () => Promise<void>;
   resetAuthenticatedUser: () => void;
 
@@ -44,7 +45,18 @@ export const useAuthStore = create<AuthState>((set) => ({
   isLoading: true,
   loadingFriendsAndRequests: false,
   socketTimeout: false,
-
+  fetchGuestUser: async () => {
+    const newUser: User = {
+      id: 0,
+      created_at: new Date(),
+      username: "Guest",
+      email: "",
+      num_wins: 0,
+      account_id: "",
+      profile_id: "",
+    };
+    set({ user: newUser, isAuthenticated: true, isAnonymous: true });
+  },
   fetchAuthenticatedUser: async () => {
     set({ isLoading: true });
     try {
@@ -54,7 +66,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       if (!isAnon) useAuthStore.getState().fetchFriendsAndRequests();
     } catch (e: any) {
       // console.log("[fetchAuthenticatedUser]", e);
-      set({ isAuthenticated: false, user: null });
+      useAuthStore.getState().fetchGuestUser();
     } finally {
       set({ isLoading: false });
     }
