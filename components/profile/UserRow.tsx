@@ -1,4 +1,4 @@
-import { User } from "@/type";
+import { User } from "@/types";
 import React from "react";
 import { Text, View } from "react-native";
 import Avatar from "./avatar";

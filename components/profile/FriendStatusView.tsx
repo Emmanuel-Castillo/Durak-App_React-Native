@@ -1,5 +1,5 @@
 import { useAuthStore } from "@/store/auth.store";
-import { User } from "@/type";
+import { User } from "@/types";
 import React, { useEffect } from "react";
 import { Alert, Text, TouchableOpacity, View } from "react-native";
 

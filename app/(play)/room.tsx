@@ -19,7 +19,7 @@ const Room = () => {
 
   if (room && game) return <Redirect href={"/game"} />;
 
-  const isHost = room.hostId === user.account_id;
+  const isHost = room.hostId === String(user.id);
   const canStartGame = isHost && room.users.length > 1;
 
   return (
@@ -29,12 +29,12 @@ const Room = () => {
         <Text className={"text text-center"}>Room ID: {room.id}</Text>
       </View>
       <FlatList
-        keyExtractor={(item) => item.profile_id}
+        keyExtractor={(item) => String(item.id)}
         data={room.users}
         renderItem={({ item }) => (
           <View>
             <UserRow user={item} />
-            {room.hostId === item.account_id && (
+            {isHost && (
               <Text
                 className={
                   "text absolute right-8 bottom-1/2 transform translate-y-1/2"
