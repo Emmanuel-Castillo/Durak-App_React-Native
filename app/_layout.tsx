@@ -1,16 +1,16 @@
 import { useAuthStore } from "@/store/auth.store";
+import { User } from "@/types";
 import { Stack } from "expo-router";
 import React, { useEffect } from "react";
 import "./global.css";
 
 const RootLayout = () => {
-  const { isLoading, user, isAnonymous, fetchAuthenticatedUser } =
-    useAuthStore();
+  const { setUser } = useAuthStore();
 
   useEffect(() => {
-    fetchAuthenticatedUser();
+    const newUser = new User();
+    setUser(newUser);
   }, []);
-  if (isLoading) return null;
 
   return <Stack screenOptions={{ headerShown: false }}></Stack>;
 };

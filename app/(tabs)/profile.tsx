@@ -8,7 +8,7 @@ const Profile = () => {
   return (
     user && (
       <SafeAreaView className={"themed-view"}>
-        <UserCard user={user} isFetchedUser={false} />
+        <UserCard user={user} />
       </SafeAreaView>
     )
   );

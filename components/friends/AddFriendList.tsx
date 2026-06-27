@@ -1,6 +1,6 @@
 import CustomTextInput from "@/components/shared/CustomTextInput";
 import UserList from "@/components/shared/UserList";
-import { User } from "@/type";
+import { User } from "@/types";
 import { getProfile } from "@/utils/supabase";
 import { FontAwesome } from "@expo/vector-icons";
 import { Link } from "expo-router";

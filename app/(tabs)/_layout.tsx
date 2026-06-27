@@ -1,15 +1,11 @@
-import { useAuthStore } from "@/store/auth.store";
 import { Ionicons } from "@expo/vector-icons";
-import { Redirect, Tabs } from "expo-router";
+import { Tabs } from "expo-router";
 import React from "react";
 
 const TabLayout = () => {
-  const { isAuthenticated } = useAuthStore();
   const activeColor = "#60A5FA";
   const inactiveColor = "#94A3B8";
 
-  if (!isAuthenticated) return <Redirect href={"/sign-in"} />;
-  //   return <Redirect href={"../editUser"} />;
   return (
     <Tabs
       screenOptions={{
@@ -39,38 +35,12 @@ const TabLayout = () => {
         }}
       />
       <Tabs.Screen
-        name="friends"
-        options={{
-          title: "Friends",
-          tabBarIcon: ({ focused }) => (
-            <Ionicons
-              name="person-add"
-              size={24}
-              color={focused ? activeColor : inactiveColor}
-            />
-          ),
-        }}
-      />
-      <Tabs.Screen
         name="profile"
         options={{
           title: "Profile",
           tabBarIcon: ({ focused }) => (
             <Ionicons
               name="person"
-              size={24}
-              color={focused ? activeColor : inactiveColor}
-            />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="settings"
-        options={{
-          title: "Settings",
-          tabBarIcon: ({ focused }) => (
-            <Ionicons
-              name="settings"
               size={24}
               color={focused ? activeColor : inactiveColor}
             />

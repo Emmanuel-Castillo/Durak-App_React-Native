@@ -1,15 +1,13 @@
-import { User } from "@/type";
+import { User } from "@/types";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import cn from "clsx";
 import { LinearGradient } from "expo-linear-gradient";
 import React from "react";
 import { Text, View } from "react-native";
 import Avatar from "./avatar";
-import FriendStatusView from "./FriendStatusView";
 
 type UserCardProps = {
   user: User;
-  isFetchedUser: boolean;
 };
 const CornerInsignia = ({
   letter,
@@ -45,8 +43,7 @@ const UserInfoCard = ({
     </LinearGradient>
   );
 };
-const UserCard = ({ user, isFetchedUser }: UserCardProps) => {
-  const formattedDate = new Date(user?.created_at).toLocaleDateString("en-US");
+const UserCard = ({ user }: UserCardProps) => {
   return (
     <LinearGradient
       colors={["#27272A", "#18181B"]}
@@ -68,24 +65,8 @@ const UserCard = ({ user, isFetchedUser }: UserCardProps) => {
             "text text-sm w-full  text-center bg-slate-950 rounded-full"
           }
         >
-          ID: {user.profile_id}
+          ID: {user.id}
         </Text>
-
-        {isFetchedUser && <FriendStatusView searchedUser={user} />}
-
-        <View className={"w-full border border-white"} />
-        <View className={"flex-1 p-4 flex-row gap-4 justify-center flex-wrap"}>
-          <UserInfoCard
-            header={"Total Wins"}
-            value={user.num_wins}
-            color={"blue"}
-          />
-          <UserInfoCard
-            header={"Joined Date"}
-            value={formattedDate}
-            color={"green"}
-          />
-        </View>
       </View>
       <CornerInsignia
         letter={user.username[0]}

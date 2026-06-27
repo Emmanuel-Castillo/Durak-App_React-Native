@@ -1,5 +1,5 @@
 import { useAuthStore } from "@/store/auth.store";
-import { Room } from "@/type";
+import { Room } from "@/types";
 import { Alert } from "react-native";
 import { create } from "zustand";
 import { SocketStatus, useSocketStore } from "./socket.store";
