@@ -1,18 +1,18 @@
 import CustomTextInput from "@/components/shared/CustomTextInput";
 import { useAuthStore } from "@/store/auth.store";
-import { signIn, signUp, signUpAnonymously } from "@/utils/supabase";
+import { signIn, signUp } from "@/utils/supabase";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
 import {
-    Alert,
-    KeyboardAvoidingView,
-    Text,
-    TouchableOpacity,
-    View,
+  Alert,
+  KeyboardAvoidingView,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 const SignIn = () => {
-  const { fetchAuthenticatedUser } = useAuthStore();
+  const { fetchAuthenticatedUser, fetchGuestUser } = useAuthStore();
   const [authType, setAuthType] = useState<"Sign In" | "Sign Up">("Sign In");
   const [form, setForm] = React.useState({
     username: "",
@@ -23,8 +23,7 @@ const SignIn = () => {
 
   const onPressSignInAnonymous = async () => {
     try {
-      await signUpAnonymously();
-      await fetchAuthenticatedUser();
+      fetchGuestUser();
     } catch (e: any) {
       Alert.alert(e.toString());
     }

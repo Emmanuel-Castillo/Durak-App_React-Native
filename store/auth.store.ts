@@ -66,7 +66,6 @@ export const useAuthStore = create<AuthState>((set) => ({
       if (!isAnon) useAuthStore.getState().fetchFriendsAndRequests();
     } catch (e: any) {
       // console.log("[fetchAuthenticatedUser]", e);
-      useAuthStore.getState().fetchGuestUser();
     } finally {
       set({ isLoading: false });
     }

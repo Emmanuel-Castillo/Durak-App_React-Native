@@ -18,15 +18,6 @@ export const supabase = createClient(
   },
 );
 
-export const signUpAnonymously = async () => {
-  try {
-    const { data, error } = await supabase.auth.signInAnonymously();
-    if (error) throw error;
-  } catch (e: any) {
-    console.log(e);
-    throw new Error(e as string);
-  }
-};
 export const signUp = async (
   username: string,
   email: string,
@@ -117,7 +108,7 @@ export const getSessionUserProfile = async () => {
 
     return { isAnon: false, user: profileData };
   } catch (e) {
-    console.log(e);
+    // console.log(e);
     throw new Error(e as string);
   }
 };
