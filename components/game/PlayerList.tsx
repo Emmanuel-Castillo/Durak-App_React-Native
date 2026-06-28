@@ -19,8 +19,7 @@ const PlayerList = ({ players, config }: PlayerListProps) => {
         renderItem={({ item: player }) => (
           <View className={"relative"}>
             <OpponentStats
-              username={player.user.username}
-              role={player.role!}
+              player={player}
               absolutePosition={getOpponentStatsAbsPosition(config)}
             />
             <OpponentHand

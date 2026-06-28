@@ -15,7 +15,7 @@ const Room = () => {
     listenForGameData();
   }, []);
 
-  if (!user || !room) return <Redirect href={"/(tabs)/home"} />;
+  if (!user || !room) return <Redirect href={"/home"} />;
 
   if (room && game) return <Redirect href={"/game"} />;
 

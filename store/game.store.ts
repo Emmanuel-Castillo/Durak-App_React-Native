@@ -1,12 +1,12 @@
 import { sortPlayersStartingWithUser } from "@/lib/sortPlayers";
 import { useAuthStore } from "@/store/auth.store";
-import { Card, Game, PlayedCards, Player } from "@/types";
+import { Card, Game, GAME_STATE, PlayedCards, Player } from "@/types";
 import { create } from "zustand";
+import { useSocketStore } from "./socket.store";
 
 type GameState = {
   game: Game | null;
   startGame: () => void;
-  startFakeGame: (game: Game) => void;
   listenForGameData: () => void;
 
   player: Player | null;
@@ -37,47 +37,66 @@ export const useGameStore = create<GameState>((set) => ({
   canCounter: false,
   showAllComments: false,
   startGame: () => {
-    const socket = useAuthStore.getState().socket;
+    const socket = useSocketStore.getState().socket;
     if (!socket) return;
 
     // Rematch, use durak (last winner) to assign roles for next game
-    let durak: Player | undefined;
+    let durak: Player | null = null;
     const game = useGameStore.getState().game;
-    if (game && game.gameState === "Ended") {
-      durak = game.winners.at(-1);
+    if (game && game.gameState === GAME_STATE.ENDED) {
+      durak = game.winners.at(-1) ?? null;
     }
     socket.emit("startGame", { durak });
   },
   listenForGameData: () => {
     const user = useAuthStore.getState().user;
-    const socket = useAuthStore.getState().socket;
+    const socket = useSocketStore.getState().socket;
     if (!user || !socket) return;
 
     socket.on("disconnect", () => {
-      set({ game: null, player: null, playerError: null, comments: [] });
+      set({
+        game: null,
+        player: null,
+        playerError: null,
+        comments: [],
+        canCounter: false,
+        showAllComments: false,
+      });
     });
 
     socket.on("gameData", (game: Game | null) => {
-      if (!game) {
-        set({ game, player: null, playerError: null, comments: [] });
-        return;
+      try {
+        if (!game) {
+          set({
+            game: null,
+            player: null,
+            playerError: null,
+            comments: [],
+            canCounter: false,
+            showAllComments: false,
+          });
+          return;
+        }
+        // Grab user player
+        const userPlayer = game.players.find((u) => u.user.id === user.id);
+        if (!userPlayer) throw new Error("Your user player is not found!");
+
+        // Sort players starting with own user player (if user player is still in-game)
+        game.players = sortPlayersStartingWithUser(
+          userPlayer.user.id,
+          game.players,
+        );
+
+        console.log(
+          "[listenForGameData]",
+          user.username,
+          " received game data:",
+          game.gameState,
+        );
+        set({ game: game, player: userPlayer });
+      } catch (e) {
+        console.error(e);
       }
-
-      // Grab user player
-      const userPlayer = game.players.find((u) => u.user.id === user.id);
-
-      // Sort players starting with own user player (if user player is still in-game)
-      game.players = sortPlayersStartingWithUser(
-        userPlayer?.user.id!,
-        game.players,
-      );
-      console.log(
-        "[listenForGameData]",
-        user.username,
-        " received game data:",
-        game.gameState,
-      );
-      set({ game: game, player: userPlayer! });
     });
 
     socket.on("updateGameWins", async (winners: Player[]) => {
@@ -85,12 +104,11 @@ export const useGameStore = create<GameState>((set) => ({
         const user = useAuthStore.getState().user;
         if (!user) throw new Error("User not found");
       } catch (e) {
-        console.log(e);
+        console.error(e);
       }
     });
 
     socket.on("newComment", (comment: string) => {
-      // console.log("New comment", comment)
       const newComments = useGameStore.getState().comments.concat(comment);
       set({ comments: newComments });
     });
@@ -100,28 +118,21 @@ export const useGameStore = create<GameState>((set) => ({
       setTimeout(() => set({ playerError: null }), 3000);
     });
   },
-  startFakeGame: (game: Game) => {
-    set({ game: game, player: game.players[0] });
-  },
   firstMove: (card) => {
-    // console.log("FirstMove")
-    const socket = useAuthStore.getState().socket;
+    const socket = useSocketStore.getState().socket;
     if (!socket) return;
     socket.emit("firstMove", { card });
   },
   attackMove: (card) => {
-    // console.log("AttackMove")
-    const socket = useAuthStore.getState().socket;
+    const socket = useSocketStore.getState().socket;
     if (!socket) return;
     socket.emit("attackMove", { card });
-    // console.log("Send attackMove to server", card)
   },
   endAttackerTurn: () => {
-    const socket = useAuthStore.getState().socket;
+    const socket = useSocketStore.getState().socket;
     if (!socket) return;
     socket.emit("endAttackerTurn");
   },
-
   checkIfCanCounter: (card) => {
     // Base cases (false):
     // 1. Game is null
@@ -151,24 +162,19 @@ export const useGameStore = create<GameState>((set) => ({
   resetCanCounter: () => {
     set({ canCounter: false });
   },
-
   defendMove: (defCard, cardPair) => {
-    const socket = useAuthStore.getState().socket;
+    const socket = useSocketStore.getState().socket;
     if (!socket) return;
-    // console.log("Emitting defendMove...")
     socket.emit("defendMove", { defCard, cardPair });
   },
   counterMove: (counterCard) => {
-    const socket = useAuthStore.getState().socket;
+    const socket = useSocketStore.getState().socket;
     if (!socket) return;
-    // console.log("Emitting counterMove...")
     socket.emit("counterMove", { counterCard });
   },
   yieldTurn: () => {
-    const socket = useAuthStore.getState().socket;
+    const socket = useSocketStore.getState().socket;
     if (!socket) return;
-
-    // console.log("Emitting yieldTurn");
     socket.emit("yieldTurn");
   },
 }));

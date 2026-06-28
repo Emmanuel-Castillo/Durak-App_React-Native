@@ -1,21 +1,17 @@
+import { Player } from "@/types";
 import React from "react";
 import { View } from "react-native";
 import Avatar from "../profile/avatar";
 
 type OpponentStatsProps = {
-  username: string;
-  role: string;
+  player: Player;
   absolutePosition: {
     top: number;
     left?: number;
     right?: number;
   };
 };
-const OpponentStats = ({
-  username,
-  role,
-  absolutePosition,
-}: OpponentStatsProps) => {
+const OpponentStats = ({ player, absolutePosition }: OpponentStatsProps) => {
   return (
     // <View className={"themed-border absolute z-10 p-2 rounded"}
     //       style={{backgroundColor: 'rgba(0,0,0,.5)', top: absolutePosition.top, left: absolutePosition.left, right: absolutePosition.right}}>
@@ -32,7 +28,7 @@ const OpponentStats = ({
         right: absolutePosition.right,
       }}
     >
-      <Avatar size={50} />
+      <Avatar userAvatar={player.user.avatar} size={50} />
     </View>
   );
 };

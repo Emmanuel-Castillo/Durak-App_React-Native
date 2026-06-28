@@ -1,5 +1,6 @@
 import CustomTextInput from "@/components/shared/CustomTextInput";
 import { useRoomStore } from "@/store/room.store";
+import { useSocketStore } from "@/store/socket.store";
 import cn from "clsx";
 import React from "react";
 import { Button, Text, View } from "react-native";
@@ -15,6 +16,7 @@ type RoomSetterConfig = {
 };
 const RoomSetter = ({ setterType }: RoomSetterProps) => {
   const { joinRoom, createRoom } = useRoomStore();
+  const { connectionStatus } = useSocketStore();
   const [inputValue, setInputValue] = React.useState("");
   const setterConfig: RoomSetterConfig =
     setterType === "Create"

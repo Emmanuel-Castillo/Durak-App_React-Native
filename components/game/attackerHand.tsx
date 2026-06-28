@@ -1,7 +1,7 @@
 import { PlayerHandProps } from "@/components/game/defenderHand";
 import DraggableCard, { LayoutInfo } from "@/components/shared/DraggableCard";
 import { useGameStore } from "@/store/game.store";
-import { Card } from "@/types";
+import { Card, GAME_STATE, PLAYER_ROLE } from "@/types";
 import { AntDesign } from "@expo/vector-icons";
 import React, { useEffect, useRef } from "react";
 import { FlatList, Text, TouchableOpacity, View } from "react-native";
@@ -31,7 +31,11 @@ const AttackerHand = ({
     const gameState = game.gameState;
     const playedCardsLength = game.playedCards.length;
     const playerRole = player.role;
-    if (gameState === "FirstMove" && playerRole !== "FirstAttacker") return;
+    if (
+      gameState === GAME_STATE.FIRST_MOVE &&
+      playerRole !== PLAYER_ROLE.FIRST_ATTACKER
+    )
+      return;
     if (playedCardsLength >= 6) return;
 
     atkCard.current = card;
@@ -45,7 +49,7 @@ const AttackerHand = ({
     if (!player) return;
     if (atkCard.current && hoveredOverBoardRef.current) {
       switch (player.role) {
-        case "FirstAttacker":
+        case PLAYER_ROLE.FIRST_ATTACKER:
           firstMove(atkCard.current);
           break;
         default:
@@ -99,7 +103,7 @@ const AttackerHand = ({
           >
             <TouchableOpacity
               className={"bg-red-500 p-4 items-center justify-center flex-1"}
-              disabled={game.gameState === "FirstMove"}
+              disabled={game.gameState === GAME_STATE.FIRST_MOVE}
               onPress={() => setToggleEndTurnButton(true)}
             >
               <Text className={"text text-center"}>End Turn</Text>

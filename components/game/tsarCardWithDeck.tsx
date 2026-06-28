@@ -1,5 +1,5 @@
 import CustomCard from "@/components/shared/customCard";
-import { Card, GameState } from "@/types";
+import { Card, GAME_STATE } from "@/types";
 import React from "react";
 import { Text, View } from "react-native";
 
@@ -10,7 +10,7 @@ const TsarCardWithDeck = ({
 }: {
   tsarCard: Card;
   deckLength: number;
-  gameState: GameState;
+  gameState: GAME_STATE;
 }) => {
   const CARD_SIZE = 60;
 

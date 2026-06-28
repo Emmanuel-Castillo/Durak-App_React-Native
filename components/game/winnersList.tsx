@@ -15,7 +15,7 @@ const WinnersList = () => {
   const winnerPlacement = (index: number) => {
     return index === game.winners.length - 1 ? "Durak" : `#${index + 1}`;
   };
-  const showRematchButton = user.account_id === room.hostId;
+  const showRematchButton = user.id === room.hostId;
 
   return (
     <View

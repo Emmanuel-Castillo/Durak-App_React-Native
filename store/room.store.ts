@@ -20,44 +20,30 @@ export const useRoomStore = create<RoomState>((set) => ({
   roomLoading: false,
   subscribeToRoomEvents: () => {
     try {
-      // console.log("[subscribeToRoomEvents]: Invoked")
       const user = useAuthStore.getState().user;
-      if (!user) throw new Error("No user found.");
-
       const { socket, connectionStatus } = useSocketStore.getState();
-      if (!socket) throw new Error("No socket found.");
-
+      if (!user || !socket) throw new Error("User or socket are not set.");
       if (connectionStatus !== SocketStatus.CONNECTED)
         throw new Error("Socket is not connected.");
 
       socket.on("disconnect", () => {
         set({ room: null });
       });
+
       socket.on("forceDisconnection", () => {
         socket.disconnect();
         set({ room: null });
       });
       socket.on("roomData", (room: Room) => {
-        // console.log("[subscribeToRoomEvents]:", user.profile_id,"Connected to room", room.name)
         set({ room: room });
       });
+
       socket.on("roomError", (error: any) => {
         Alert.alert("Socket room subscription error", error.toString());
       });
-
-      socket.emit("testGame", { user });
     } catch (e: any) {
-      Alert.alert(e.toString());
+      Alert.alert("Room Error", e.toString());
     }
-    // socket.emit("testGame", {user})     // TESTING
-    // socket.on("gameData", (game: Game) => {
-    //     const room = useRoomStore.getState().room;
-    //     if (!room) return console.warn("No room found. Cannot update game data.");
-    //
-    //     // Sort players starting with own UserId
-    //     game.players = sortPlayersStartingWithUser(user.account_id, game.players)
-    //     set({room: {...room, game: game}});
-    // })
   },
   createRoom: (roomName) => {
     set({ roomLoading: true });
@@ -68,6 +54,7 @@ export const useRoomStore = create<RoomState>((set) => ({
       if (!user || !socket) throw new Error("User or socket are null.");
       if (connectionStatus !== SocketStatus.CONNECTED)
         throw new Error("Socket is not connected.");
+
       socket.emit("createRoom", { user, roomName });
     } catch (e: any) {
       Alert.alert("Create Room Error", e.toString());
@@ -79,11 +66,12 @@ export const useRoomStore = create<RoomState>((set) => ({
     set({ roomLoading: true });
     try {
       if (roomId.length === 0) throw new Error("Room id is empty.");
-      const { socket, connectionStatus } = useSocketStore.getState();
       const user = useAuthStore.getState().user;
-      if (!socket || !user) throw new Error("User or socket are null.");
+      const { socket, connectionStatus } = useSocketStore.getState();
+      if (!socket || !user) throw new Error("User or socket are not set.");
       if (connectionStatus !== SocketStatus.CONNECTED)
         throw new Error("Socket is not connected.");
+
       socket.emit("joinRoom", { user, roomId });
     } catch (e: any) {
       Alert.alert("Join Room Error", e.toString());
@@ -95,6 +83,7 @@ export const useRoomStore = create<RoomState>((set) => ({
     try {
       const socket = useSocketStore.getState().socket;
       if (!socket) throw new Error("Socket is null.");
+
       socket.disconnect();
     } catch (e: any) {
       Alert.alert("Leave Room Error", e.toString());
@@ -104,14 +93,13 @@ export const useRoomStore = create<RoomState>((set) => ({
   },
   removeFromRoom: (userId: string) => {
     try {
-      if (userId.length === 0) throw new Error("UserId id is empty.");
+      if (userId.length === 0) throw new Error("User id is empty.");
       const socket = useSocketStore.getState().socket;
       const user = useAuthStore.getState().user;
       const room = useRoomStore.getState().room;
       if (!user || !socket || !room)
-        throw new Error("User, socket, or room are null.");
-      if (room.hostId !== user.account_id)
-        throw new Error("User is not the host.");
+        throw new Error("User, socket, or room are not set.");
+      if (room.hostId !== user.id) throw new Error("User is not the host.");
 
       socket.emit("removeFromRoom", { userId });
     } catch (e: any) {

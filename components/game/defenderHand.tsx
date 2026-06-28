@@ -1,7 +1,7 @@
 import { CardDragImpl, PlayerCardBoardRefs } from "@/components/game/board";
 import DraggableCard, { LayoutInfo } from "@/components/shared/DraggableCard";
 import { useGameStore } from "@/store/game.store";
-import { Card } from "@/types";
+import { Card, GAME_STATE } from "@/types";
 import { AntDesign } from "@expo/vector-icons";
 import React, { useEffect, useRef, useState } from "react";
 import { FlatList, Text, TouchableOpacity, View } from "react-native";
@@ -35,7 +35,7 @@ const DefenderHand = ({
   const defStartDrag = (card: Card, layout: LayoutInfo) => {
     // Defender CANNOT drag cards during FirstMove game state
     const currentState = useGameStore.getState().game!.gameState;
-    if (currentState === "FirstMove") return;
+    if (currentState === GAME_STATE.FIRST_MOVE) return;
 
     defCard.current = card;
 
@@ -110,7 +110,7 @@ const DefenderHand = ({
           >
             <TouchableOpacity
               className={"bg-red-500 p-4 items-center justify-center flex-1"}
-              disabled={game.gameState === "FirstMove"}
+              disabled={game.gameState === GAME_STATE.FIRST_MOVE}
               onPress={() => setYieldButtonTouched(true)}
             >
               <Text className={"text"}>Yield</Text>

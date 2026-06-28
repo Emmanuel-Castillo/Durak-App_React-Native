@@ -22,9 +22,9 @@ const Home = () => {
   if (room) return <Redirect href={"/(play)/room"} />;
   return (
     <SafeAreaView className={"themed-view gap-4"}>
+      {user && <UserCard user={user} />}
       <RoomSetter setterType={"Join"} />
       <RoomSetter setterType={"Create"} />
-      {user && <UserCard user={user} />}
     </SafeAreaView>
 
     //

@@ -1,6 +1,6 @@
 import { Player } from "@/types";
 
-export function sortPlayersStartingWithUser(userId: number, players: Player[]) {
+export function sortPlayersStartingWithUser(userId: string, players: Player[]) {
   const userPlayerIndex = players.findIndex((p) => p.user.id === userId);
   const leftSortedPlayers = players.slice(userPlayerIndex);
   const rightSortedPlayers = players.slice(0, userPlayerIndex);

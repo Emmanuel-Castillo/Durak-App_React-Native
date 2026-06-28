@@ -13,7 +13,7 @@ import {
 import { useAuthStore } from "@/store/auth.store";
 import { useGameStore } from "@/store/game.store";
 import { useRoomStore } from "@/store/room.store";
-import { Card, PlayedCards, Player } from "@/types";
+import { Card, GAME_STATE, PlayedCards, Player } from "@/types";
 import cn from "clsx";
 import { Redirect } from "expo-router";
 import React, { RefObject, useEffect, useRef, useState } from "react";
@@ -158,8 +158,7 @@ const Board = () => {
     handleDragEnd,
   };
 
-  if (!user || !player || !game || !room)
-    return <Redirect href={"/(tabs)/home"} />;
+  if (!user || !player || !game || !room) return <Redirect href={"/home"} />;
   const players = game.players;
   const playedCards = game.playedCards;
 
@@ -172,7 +171,7 @@ const Board = () => {
       {/* {showAllComments && <CommentsList comments={comments} />} */}
 
       {/* Winners list when game ends*/}
-      {game.gameState === "Ended" && <WinnersList />}
+      {game.gameState === GAME_STATE.ENDED && <WinnersList />}
 
       {/* Ghost card */}
       {ghostCard.card && (

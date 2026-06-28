@@ -7,11 +7,6 @@ type AvatarProps = {
 };
 const Avatar = ({ userAvatar, size }: AvatarProps) => {
   return (
-    // <View
-    //   className={
-    //     "border border-white justify-center items-center rounded-full bg-black"
-    //   }
-    // >
     <Image
       source={
         userAvatar
@@ -22,7 +17,6 @@ const Avatar = ({ userAvatar, size }: AvatarProps) => {
       className="border border-white rounded-full bg-black"
       resizeMode={"contain"}
     />
-    // </View>
   );
 };
 export default Avatar;
